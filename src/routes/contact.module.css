@@ -1,0 +1,25 @@
+.text {
+  text-align: right;
+  grid-column: span 12;
+  color: var(--color-two);
+}
+
+@media (min-width: 992px) {
+  .text {
+    grid-column: 9 / span 4;
+  }
+}
+
+.anchor {
+  display: block;
+  font-weight: var(--font-weight-demibold);
+  color: var(--color-accent);
+  margin: 0 0 40px 0;
+  text-decoration: none;
+}
+
+.big {
+  font-size: 24px;
+  margin: 0 0 60px 0;
+  font-weight: var(--font-weight-bold);
+}

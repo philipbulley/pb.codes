@@ -1,0 +1,90 @@
+/* Lower layers lose to anything unlayered (i.e. component styles) */
+@layer reset, grid;
+
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    font: 112.5%/1.45em var(--font-family);
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    overflow-y: scroll;
+  }
+
+  @media only screen and (max-width: 480px) {
+    html {
+      font-size: 100%;
+    }
+  }
+
+  body {
+    margin: 0;
+    color: hsla(0, 0%, 0%, 0.8);
+    font-family: var(--font-family);
+    font-weight: normal;
+    word-wrap: break-word;
+    font-kerning: normal;
+    font-feature-settings: 'kern', 'liga', 'clig', 'calt';
+  }
+
+  h1,
+  h2 {
+    margin: 0 0 1.45rem;
+    padding: 0;
+    color: inherit;
+    font-family: var(--font-family);
+    font-weight: bold;
+    text-rendering: optimizeLegibility;
+    line-height: 1.1;
+  }
+
+  h1 {
+    font-size: 2.25rem;
+  }
+
+  h2 {
+    font-size: 1.62671rem;
+  }
+
+  p,
+  ul {
+    margin: 0 0 1.45rem;
+    padding: 0;
+  }
+
+  ul {
+    margin-left: 1.45rem;
+    list-style-position: outside;
+    list-style-image: none;
+  }
+
+  li {
+    margin-bottom: calc(1.45rem / 2);
+    padding-left: 0;
+  }
+
+  li *:last-child,
+  p *:last-child {
+    margin-bottom: 0;
+  }
+
+  a {
+    background-color: transparent;
+  }
+
+  b,
+  strong {
+    font-weight: bold;
+  }
+
+  img {
+    max-width: 100%;
+    border-style: none;
+    margin: 0 0 1.45rem;
+    padding: 0;
+  }
+}

@@ -1,0 +1,29 @@
+import type { CSSProperties, ReactNode } from 'react';
+import { useLocation } from 'react-router';
+import Header from './header';
+import Nav from './nav';
+import Bio from './bio';
+import GridGuide from '../shared/grid/guide';
+import Footer from './footer';
+import { getAccentColor } from '../shared/theme';
+import styles from './layout.module.css';
+
+const Layout = ({ children }: { children: ReactNode }) => {
+  const { pathname } = useLocation();
+
+  return (
+    <div
+      className={styles.container}
+      style={{ '--color-accent': getAccentColor(pathname) } as CSSProperties}
+    >
+      <Header />
+      <Bio />
+      <GridGuide />
+      <Nav currentPath={pathname} />
+      <div className={styles.main}>{children}</div>
+      <Footer />
+    </div>
+  );
+};
+
+export default Layout;

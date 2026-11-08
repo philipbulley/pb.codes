@@ -1,0 +1,45 @@
+@layer grid {
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-gap: 10px;
+    padding: 0 30px;
+  }
+
+  .debug {
+    background-color: #ff880066;
+  }
+
+  @media (min-width: 768px) {
+    .grid {
+      margin: 0 auto;
+      width: 768px;
+      padding: 0 50px;
+    }
+
+    .debug {
+      background-color: #ff00cc66;
+    }
+  }
+
+  @media (min-width: 992px) {
+    .grid {
+      width: 992px;
+      padding: 0 120px;
+    }
+
+    .debug {
+      background-color: #9acd3266;
+    }
+  }
+
+  @media (min-width: 1200px) {
+    .grid {
+      width: 1200px;
+    }
+
+    .debug {
+      background-color: #00bfff66;
+    }
+  }
+}
