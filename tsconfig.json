@@ -1,6 +1,6 @@
 {
   "include": ["**/*", ".react-router/types/**/*"],
-  "exclude": ["node_modules", "build"],
+  "exclude": ["node_modules", "build", ".claude"],
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ES2023"],
     "types": ["node", "vite/client"],

@@ -6,7 +6,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 export default defineConfig([
-  globalIgnores(['build/', '.react-router/']),
+  globalIgnores(['build/', '.react-router/', '.claude/']),
   {
     files: ['**/*.{js,ts,tsx}'],
     extends: [
