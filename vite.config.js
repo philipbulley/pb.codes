@@ -3,6 +3,8 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [reactRouter()],
-  // styled-components' CJS default export doesn't survive Node's ESM interop
-  ssr: { noExternal: ['styled-components'] },
+  define: {
+    // See shared/use-today.js
+    __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
+  },
 });

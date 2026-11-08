@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
-import styled from 'styled-components';
-import _Grid from './grid';
+import Grid from './grid';
+import styles from './guide.module.css';
 
 class GridGuide extends PureComponent {
   state = {
@@ -34,37 +34,20 @@ class GridGuide extends PureComponent {
 
     return (
       show && (
-        <Container $opacity={opacity}>
-          <Grid $debug={fill}>
+        <div className={styles.container} style={{ opacity }}>
+          <Grid className={styles.grid} debug={fill}>
             {Array(12)
               .fill()
               .map((_, i) => (
-                <Content key={i}>{i + 1}</Content>
+                <div className={styles.column} key={i}>
+                  {i + 1}
+                </div>
               ))}
           </Grid>
-        </Container>
+        </div>
       )
     );
   }
 }
 
 export default GridGuide;
-
-const Container = styled.div`
-  pointer-events: none;
-  position: fixed;
-  width: 100vw;
-  height: 100vh;
-  top: 0;
-  z-index: 100;
-  opacity: ${({ $opacity }) => $opacity};
-`;
-
-const Grid = styled(_Grid)`
-  height: 100%;
-`;
-
-const Content = styled.div`
-  outline: 1px solid rgba(255, 0, 0, 0.8);
-  height: 100%;
-`;

@@ -1,14 +1,19 @@
 import React from 'react';
-import styled, { css } from 'styled-components';
-import Grid from '../shared/grid/grid';
-import query from '../shared/media';
 import { motion } from 'motion/react';
+import Grid from '../shared/grid/grid';
+import cx from '../shared/cx';
+import styles from './contact.module.css';
 
 const Contact = () => (
   <Grid>
-    <ContactText initial="init" animate="show">
+    <motion.div
+      className={styles.text}
+      variants={{ init: {}, show: { transition: { staggerChildren: 0.1 } } }}
+      initial="init"
+      animate="show"
+    >
       Please say
-      <Anchor $big href="mailto:hello@pb.codes">
+      <Anchor big href="mailto:hello@pb.codes">
         hello@pb.codes
       </Anchor>
       or find me on
@@ -18,38 +23,16 @@ const Contact = () => (
       <Anchor href="https://stackoverflow.com/users/619602/philip-bulley">
         Stack Overflow
       </Anchor>
-    </ContactText>
+    </motion.div>
   </Grid>
 );
 
 export default Contact;
 
-const ContactText = styled(motion.div).attrs({
-  variants: { init: {}, show: { transition: { staggerChildren: 0.1 } } },
-})`
-  text-align: right;
-  grid-column: span 12;
-  color: ${({ theme }) => theme.color.two};
-
-  ${query.md} {
-    grid-column: 9 / span 4;
-  }
-`;
-
-const Anchor = styled(motion.a).attrs({
-  variants: { init: { opacity: 0 }, show: { opacity: 1 } },
-})`
-  display: block;
-  font-weight: ${({ theme }) => theme.font.weightDemiBold};
-  color: ${({ theme }) => theme.color.accent};
-  margin: 0 0 40px 0;
-  text-decoration: none;
-
-  ${({ $big }) =>
-    $big &&
-    css`
-      font-size: 24px;
-      margin: 0 0 60px 0;
-      font-weight: ${({ theme }) => theme.font.weightBold};
-    `};
-`;
+const Anchor = ({ big, ...props }) => (
+  <motion.a
+    className={cx(styles.anchor, big && styles.big)}
+    variants={{ init: { opacity: 0 }, show: { opacity: 1 } }}
+    {...props}
+  />
+);

@@ -5,8 +5,9 @@
 [build.environment]
   NODE_VERSION = "26.13.0"
 
-# Serve the SPA shell for every route; the client router takes it from there
+# Pre-rendered pages are served as files. Anything else gets the SPA shell,
+# which renders the not-found route on the client.
 [[redirects]]
   from = "/*"
-  to = "/index.html"
-  status = 200
+  to = "/__spa-fallback.html"
+  status = 404

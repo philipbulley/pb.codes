@@ -1,33 +1,12 @@
-const theme = {
-  font: {
-    family: `Avenir Next, -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'`,
-    weightNormal: 'normal',
-    weightDemiBold: 600,
-    weightBold: 700,
-  },
-  color: {
-    black: '#000',
-    one: '#000022',
-    two: '#666677',
-    three: '#9999AA',
-    white: '#fff',
-    blue: '#2850AD',
-    yellow: '#FCCC0A',
-    red: '#EE352E',
-  },
-};
-theme.color.accent = theme.color.black;
+const defaultAccent = '#000';
 
-export const themeBlueAccent = {
-  ...theme,
-  color: { ...theme.color, accent: theme.color.blue },
+// Each section of the site has its own accent colour
+const accents = {
+  '/projects': '#2850AD',
+  '/about': '#FCCC0A',
+  '/contact': '#EE352E',
 };
-export const themeYellowAccent = {
-  ...theme,
-  color: { ...theme.color, accent: theme.color.yellow },
-};
-export const themeRedAccent = {
-  ...theme,
-  color: { ...theme.color, accent: theme.color.red },
-};
-export default theme;
+
+export const getAccentColor = pathname =>
+  Object.entries(accents).find(([path]) => pathname.startsWith(path))?.[1] ??
+  defaultAccent;

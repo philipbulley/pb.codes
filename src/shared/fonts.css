@@ -1,9 +1,3 @@
-/*
- * Styled Components v4 has an issue with loading fonts.
- * Using direct CSS to import instead.
- * https://github.com/styled-components/styled-components/issues/1593
- */
-
 @font-face {
   font-family: 'Avenir Next';
   font-style: normal;

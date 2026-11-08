@@ -1,23 +1,10 @@
-import { Links, Meta, Outlet, Scripts, ScrollRestoration, useLocation } from 'react-router';
-import { ThemeProvider } from 'styled-components';
+import React from 'react';
+import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
 import SiteLayout from './components/layout';
-import GlobalStyle from './shared/global-style';
-import theme, {
-  themeBlueAccent,
-  themeRedAccent,
-  themeYellowAccent,
-} from './shared/theme';
-
-const themeOverrides = {
-  '/projects': themeBlueAccent,
-  '/about': themeYellowAccent,
-  '/contact': themeRedAccent,
-};
-
-const getTheme = pathname =>
-  themeOverrides[
-    Object.keys(themeOverrides).find(key => pathname.startsWith(key))
-  ] || theme;
+import { getAccentColor } from './shared/theme';
+import './shared/fonts.css';
+import './shared/theme.css';
+import './shared/global.css';
 
 export const meta = ({ location }) => [
   { title: 'pb.codes' },
@@ -31,7 +18,7 @@ export const meta = ({ location }) => [
     content:
       'Philip Bulley, web developer London, freelance web developer, React, Redux, RxJS, TypeScript, JavaScript',
   },
-  { name: 'theme-color', content: getTheme(location.pathname).color.accent },
+  { name: 'theme-color', content: getAccentColor(location.pathname) },
 ];
 
 export const links = () => [
@@ -59,14 +46,9 @@ export function Layout({ children }) {
 }
 
 export default function App() {
-  const { pathname } = useLocation();
-
   return (
-    <ThemeProvider theme={getTheme(pathname)}>
-      <GlobalStyle />
-      <SiteLayout>
-        <Outlet />
-      </SiteLayout>
-    </ThemeProvider>
+    <SiteLayout>
+      <Outlet />
+    </SiteLayout>
   );
 }

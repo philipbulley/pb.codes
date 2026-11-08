@@ -1,23 +1,23 @@
 import React from 'react';
-import styled from 'styled-components';
-import query from '../shared/media';
-import Grid from '../shared/grid/grid';
 import { motion } from 'motion/react';
+import Grid from '../shared/grid/grid';
+import useToday from '../shared/use-today';
 import commodore64Src from '../images/commodore-64-c.jpg';
+import styles from './about.module.css';
 
-const date = new Date();
-let years = date.getFullYear() - 1999;
-if (date.getMonth() < 7) {
-  years--;
-}
+// Industry experience since 1999, ticking over each August
+const yearsSince1999 = date =>
+  date.getFullYear() - 1999 - (date.getMonth() < 7 ? 1 : 0);
 
 const About = () => {
+  const years = yearsSince1999(useToday());
+
   return (
-    <Container variants={containerVariants} initial="init" animate="show">
+    <motion.div variants={containerVariants} initial="init" animate="show">
       <Grid>
         <SubHeading>A love for application development.</SubHeading>
         <SubHeading>A passion for user interface.</SubHeading>
-        <AboutText>
+        <div className={styles.text}>
           <Paragraph>
             With {years} years of industry experience, I've developed a keen eye
             for visual design and an intuitive approach to application
@@ -48,7 +48,8 @@ const About = () => {
             It's fair to say that things have come a long way since Santa
             delivered this beauty on Christmas Day 1989!{' '}
             <a href="https://en.wikipedia.org/wiki/Commodore_64">
-              <Image
+              <img
+                className={styles.image}
                 src={commodore64Src}
                 width={750}
                 height={362}
@@ -56,15 +57,14 @@ const About = () => {
               />
             </a>
           </Paragraph>
-        </AboutText>
+        </div>
       </Grid>
-    </Container>
+    </motion.div>
   );
 };
 
 export default About;
 
-const Container = motion.div;
 const containerVariants = {
   init: {},
   show: { transition: { staggerChildren: 0.3 } },
@@ -75,44 +75,13 @@ const fade = {
   show: { opacity: 1 },
 };
 
-const SubHeading = styled(motion.h2).attrs({ variants: fade })`
-  grid-column: span 12;
-  font-size: 24px;
-  margin: 0 0 20px 0;
+const SubHeading = props => (
+  <motion.h2 className={styles.subHeading} variants={fade} {...props} />
+);
 
-  &:last-of-type {
-    margin: 0 0 60px 0;
-  }
+const paragraphVariants = {
+  ...fade,
+  show: { ...fade.show, transition: { duration: 1, ease: 'linear' } },
+};
 
-  ${query.lg} {
-    grid-column: 3 / span 7;
-  }
-`;
-
-const AboutText = styled.div`
-  grid-column: span 12;
-  color: ${({ theme }) => theme.color.two};
-
-  ${query.sm} {
-    grid-column: 6 / span 5;
-  }
-
-  strong {
-    color: ${({ theme }) => theme.color.one};
-    font-weight: ${({ theme }) => theme.font.weightDemiBold};
-  }
-`;
-
-const Image = styled.img`
-  display: block;
-  width: 100%;
-  height: auto;
-  margin: 50px 0;
-`;
-
-const Paragraph = styled(motion.p).attrs({
-  variants: {
-    ...fade,
-    show: { ...fade.show, transition: { duration: 1, ease: 'linear' } },
-  },
-})``;
+const Paragraph = props => <motion.p variants={paragraphVariants} {...props} />;

@@ -1,6 +1,5 @@
 import React from 'react';
-import styled from 'styled-components';
-import _Project, {
+import Project, {
   Block,
   Date,
   Heading,
@@ -10,7 +9,6 @@ import _Project, {
   Reveal,
 } from '../components/project';
 import Grid from '../shared/grid/grid';
-import query from '../shared/media';
 
 const Projects = () => (
   <Grid>
@@ -238,11 +236,3 @@ const Projects = () => (
 );
 
 export default Projects;
-
-const Project = styled(_Project)`
-  grid-column: span 12;
-
-  ${query.sm} {
-    grid-column: span 9;
-  }
-`;
