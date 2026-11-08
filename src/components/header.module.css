@@ -5,10 +5,8 @@
   --header-collapse-distance: calc(
     var(--header-max-height) - var(--header-min-height)
   );
-  /* Both 0–1, set from scroll position in header.tsx:
-     how collapsed the header is, and how far its nav has risen into view */
+  /* 0 = expanded, 1 = collapsed; set from scroll position in header.tsx */
   --collapse: 0;
-  --nav-reveal: 0;
 
   position: sticky;
   top: calc(-1 * var(--header-collapse-distance));
@@ -44,9 +42,7 @@
   will-change: transform;
 }
 
-/* Right aligned in the strip that stays visible once collapsed. It starts a
-   full strip's height lower (clipped by the header) and rises into place in
-   step with the page nav scrolling under the header */
+/* Right aligned in the strip that stays visible once collapsed */
 .nav {
   grid-row: 1;
   grid-column: 1 / -1;
@@ -60,16 +56,20 @@
   padding-top: 7px;
   font-size: 14px;
   font-weight: var(--font-weight-demibold);
-  transform: translateY(
-    calc((1 - var(--nav-reveal)) * var(--header-min-height))
-  );
-  will-change: transform;
 }
 
+/* Each link starts a full strip's height lower (clipped by the header) and
+   rises into place in step with the page nav scrolling under the header;
+   `--link-reveal` (0–1) is set per link in header.tsx */
 .navLink {
   --hover-underline-color: var(--color-white);
+  --link-reveal: 0;
 
   display: inline-block;
+  transform: translateY(
+    calc((1 - var(--link-reveal)) * var(--header-min-height))
+  );
+  will-change: transform;
   /* Leaves room for the underline below the text, matching the page nav:
      3px gap + 4px underline */
   padding-bottom: 7px;
