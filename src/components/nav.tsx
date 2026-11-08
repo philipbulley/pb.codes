@@ -28,6 +28,9 @@ const Nav = ({ currentPath }: { currentPath: string }) => (
           <Link
             className={cx(styles.link, !isActive && styles.inactive)}
             to={to}
+            // Keep the reader where they are (and the header as collapsed as
+            // it was) when switching sections, rather than jumping to the top
+            preventScrollReset
           >
             {label}
             <motion.div
