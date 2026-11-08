@@ -2,13 +2,13 @@ import React from 'react';
 import styled, { css } from 'styled-components';
 import Grid from '../shared/grid/grid';
 import query from '../shared/media';
-import posed from 'react-pose';
+import { motion } from 'motion/react';
 
 const Contact = () => (
   <Grid>
-    <ContactText initialPose="init" pose="show">
+    <ContactText initial="init" animate="show">
       Please say
-      <Anchor big href="mailto:hello@pb.codes">
+      <Anchor $big href="mailto:hello@pb.codes">
         hello@pb.codes
       </Anchor>
       or find me on
@@ -24,7 +24,9 @@ const Contact = () => (
 
 export default Contact;
 
-const ContactText = posed(styled.div`
+const ContactText = styled(motion.div).attrs({
+  variants: { init: {}, show: { transition: { staggerChildren: 0.1 } } },
+})`
   text-align: right;
   grid-column: span 12;
   color: ${({ theme }) => theme.color.two};
@@ -32,26 +34,22 @@ const ContactText = posed(styled.div`
   ${query.md} {
     grid-column: 9 / span 4;
   }
-`)({
-  init: {},
-  show: { staggerChildren: 100 },
-});
+`;
 
-const Anchor = posed(styled.a`
+const Anchor = styled(motion.a).attrs({
+  variants: { init: { opacity: 0 }, show: { opacity: 1 } },
+})`
   display: block;
   font-weight: ${({ theme }) => theme.font.weightDemiBold};
   color: ${({ theme }) => theme.color.accent};
   margin: 0 0 40px 0;
   text-decoration: none;
 
-  ${({ big }) =>
-    big &&
+  ${({ $big }) =>
+    $big &&
     css`
       font-size: 24px;
       margin: 0 0 60px 0;
       font-weight: ${({ theme }) => theme.font.weightBold};
     `};
-`)({
-  init: { opacity: 0 },
-  show: { opacity: 1 },
-});
+`;

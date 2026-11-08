@@ -1,11 +1,11 @@
 import React from 'react';
 import styled from 'styled-components';
 import Grid from '../shared/grid/grid';
-import posed from 'react-pose';
+import { motion } from 'motion/react';
 import query from '../shared/media';
 
 const IndexPage = () => (
-  <Container initialPose="init" pose="show">
+  <Container variants={containerVariants} initial="init" animate="show">
     <Grid>
       <Paragraph>
         <Badge>Latest</Badge>
@@ -23,19 +23,23 @@ const IndexPage = () => (
 
 export default IndexPage;
 
-const Container = posed(styled.div`
+const Container = styled(motion.div)`
   display: none;
   margin-top: -100px;
 
   ${query.sm} {
     display: block;
   }
-`)({
-  init: {},
-  show: { staggerChildren: 500 },
-});
+`;
 
-const ParagraphPosed = posed.p({
+const containerVariants = {
+  init: {},
+  // Delay lives here rather than on the children: in motion a child's own
+  // `delay` replaces its stagger offset instead of adding to it
+  show: { transition: { delayChildren: 1, staggerChildren: 0.5 } },
+};
+
+const paragraphVariants = {
   init: {
     opacity: 0,
     y: '-5px',
@@ -43,11 +47,11 @@ const ParagraphPosed = posed.p({
   show: {
     opacity: 1,
     y: '0px',
-    transition: { delay: 1000, duration: 1000 },
+    transition: { type: 'tween', duration: 1 },
   },
-});
+};
 
-const Paragraph = styled(ParagraphPosed)`
+const Paragraph = styled(motion.p).attrs({ variants: paragraphVariants })`
   opacity: 0;
   font-size: 16px;
   color: ${({ theme }) => theme.color.two};

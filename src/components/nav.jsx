@@ -1,62 +1,57 @@
 import React from 'react';
-import { Link as LinkComponent } from 'gatsby';
-import posed from 'react-pose';
+import { Link as LinkComponent } from 'react-router';
+import { motion } from 'motion/react';
 import styled, { css } from 'styled-components';
 import _Grid from '../shared/grid/grid';
 import { easeOutExpo } from '../shared/easing';
 import query, { matches, minWidth } from '../shared/media';
 
+const items = [
+  { to: '/projects', label: 'Projects.' },
+  { to: '/about', label: 'About.' },
+  { to: '/contact', label: 'Contact.' },
+];
+
 const Nav = ({ currentPath }) => (
   <Grid>
-    <NavItem initialPose="init" pose={getPose('/projects/', currentPath)}>
-      <Link to={'/projects/'}>
-        Projects.
-        <Underline />
-      </Link>
-    </NavItem>
-    <NavItem initialPose="init" pose={getPose('/about/', currentPath)}>
-      <Link to={'/about/'}>
-        About.
-        <Underline />
-      </Link>
-    </NavItem>
-    <NavItem initialPose="init" pose={getPose('/contact/', currentPath)}>
-      <Link to={'/contact/'}>
-        Contact.
-        <Underline />
-      </Link>
-    </NavItem>
+    {items.map(({ to, label }) => (
+      <NavItem
+        key={to}
+        variants={navItemVariants}
+        initial="init"
+        animate={currentPath.startsWith(to) ? 'active' : 'inactive'}
+      >
+        <Link to={to}>
+          {label}
+          <Underline variants={underlineVariants} />
+        </Link>
+      </NavItem>
+    ))}
   </Grid>
 );
 
 export default Nav;
 
-// const Container = posed.div({
-//   init: {},
-//   show: { staggerChildren: 500 },
-//   // inactive: { staggerChildren: 500 },
-// });
-
-const getPose = (matchPath, currentPath) =>
-  currentPath.startsWith(matchPath) ? 'active' : 'inactive';
-const navItemTransition = { ease: [0.19, 1.0, 0.22, 1.0], duration: 500 };
-const NavItemPosed = posed.div({
+const navItemTransition = { ease: easeOutExpo, duration: 0.5 };
+const navItemVariants = {
   init: {
     y: 0,
     opacity: 0,
   },
-  active: {
-    y: () => (matches(minWidth.sm) ? 50 : 0),
+  // Resolved when the animation starts, so `matches` only runs in the browser
+  active: () => ({
+    y: matches(minWidth.sm) ? 50 : 0,
     opacity: 1,
     transition: navItemTransition,
-  },
+  }),
   inactive: {
     y: 0,
-    transition: navItemTransition,
     opacity: 1,
+    transition: navItemTransition,
   },
-});
-const NavItem = styled(NavItemPosed)`
+};
+
+const NavItem = styled(motion.div)`
   ${({ theme }) => css`
     display: inline-block;
     font-weight: ${theme.font.weightDemiBold};
@@ -98,12 +93,14 @@ const NavItem = styled(NavItemPosed)`
     }
   `};
 `;
-const underlineTransition = { ease: easeOutExpo, duration: 5000 };
-const UnderlinePosed = posed.div({
+
+const underlineTransition = { ease: easeOutExpo, duration: 5 };
+const underlineVariants = {
   active: { width: '100%', transition: underlineTransition },
-  inactive: { width: 0, transition: { ...underlineTransition, duration: 0 } },
-});
-const Underline = styled(UnderlinePosed)`
+  inactive: { width: 0, transition: { duration: 0 } },
+};
+
+const Underline = styled(motion.div)`
   width: 0;
   margin-top: 3px;
   height: 4px;

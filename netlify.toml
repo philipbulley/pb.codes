@@ -1,0 +1,12 @@
+[build]
+  command = "npm run build"
+  publish = "build/client"
+
+[build.environment]
+  NODE_VERSION = "26.13.0"
+
+# Serve the SPA shell for every route; the client router takes it from there
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

@@ -2,25 +2,8 @@ import React from 'react';
 import styled from 'styled-components';
 import query from '../shared/media';
 import Grid from '../shared/grid/grid';
-import posed from 'react-pose';
-import { graphql, useStaticQuery } from 'gatsby';
-import Img from 'gatsby-image';
-
-export const imageQuery = graphql`
-  query {
-    fileName: file(relativePath: { eq: "commodore-64-c.jpg" }) {
-      childImageSharp {
-        fluid(maxWidth: 768) {
-          aspectRatio
-          base64
-          src
-          sizes
-          srcSet
-        }
-      }
-    }
-  }
-`;
+import { motion } from 'motion/react';
+import commodore64Src from '../images/commodore-64-c.jpg';
 
 const date = new Date();
 let years = date.getFullYear() - 1999;
@@ -29,10 +12,8 @@ if (date.getMonth() < 7) {
 }
 
 const About = () => {
-  const data = useStaticQuery(imageQuery);
-
   return (
-    <Container initialPose="init" pose="show">
+    <Container variants={containerVariants} initial="init" animate="show">
       <Grid>
         <SubHeading>A love for application development.</SubHeading>
         <SubHeading>A passion for user interface.</SubHeading>
@@ -68,7 +49,9 @@ const About = () => {
             delivered this beauty on Christmas Day 1989!{' '}
             <a href="https://en.wikipedia.org/wiki/Commodore_64">
               <Image
-                fluid={data.fileName.childImageSharp.fluid}
+                src={commodore64Src}
+                width={750}
+                height={362}
                 alt="A Commodore 64 C computer"
               />
             </a>
@@ -81,12 +64,18 @@ const About = () => {
 
 export default About;
 
-const Container = posed.div({
+const Container = motion.div;
+const containerVariants = {
   init: {},
-  show: { staggerChildren: 300 },
-});
+  show: { transition: { staggerChildren: 0.3 } },
+};
 
-const SubHeading = posed(styled.h2`
+const fade = {
+  init: { opacity: 0 },
+  show: { opacity: 1 },
+};
+
+const SubHeading = styled(motion.h2).attrs({ variants: fade })`
   grid-column: span 12;
   font-size: 24px;
   margin: 0 0 20px 0;
@@ -98,10 +87,7 @@ const SubHeading = posed(styled.h2`
   ${query.lg} {
     grid-column: 3 / span 7;
   }
-`)({
-  init: { opacity: 0 },
-  show: { opacity: 1 },
-});
+`;
 
 const AboutText = styled.div`
   grid-column: span 12;
@@ -117,14 +103,16 @@ const AboutText = styled.div`
   }
 `;
 
-const Image = styled(Img)`
+const Image = styled.img`
+  display: block;
+  width: 100%;
+  height: auto;
   margin: 50px 0;
 `;
 
-const Paragraph = posed.p({
-  init: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { delay: 100, duration: 1000, ease: 'linear' },
+const Paragraph = styled(motion.p).attrs({
+  variants: {
+    ...fade,
+    show: { ...fade.show, transition: { duration: 1, ease: 'linear' } },
   },
-});
+})``;

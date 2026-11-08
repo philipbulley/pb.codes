@@ -1,7 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import _Grid from '../shared/grid/grid';
-import { Link } from 'gatsby';
+import { Link } from 'react-router';
 
 const Header = () => (
   <HeaderStyled>

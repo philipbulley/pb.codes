@@ -1,20 +1,21 @@
 import React from 'react';
 import styled from 'styled-components';
 import _Project, {
+  Block,
   Date,
   Heading,
   List,
   ListItem,
   Paragraph,
+  Reveal,
 } from '../components/project';
 import Grid from '../shared/grid/grid';
 import query from '../shared/media';
-import ViewportPose from '../components/viewport-pose';
 
 const Projects = () => (
   <Grid>
     <Project>
-      <ViewportPose>
+      <Reveal>
         <Date>March 2020 - present</Date>
         <Heading>NatWest — Mettle</Heading>
         <Paragraph>
@@ -45,18 +46,18 @@ const Projects = () => (
           </ListItem>
         </List>
         <Paragraph>Basis: Full time</Paragraph>
-      </ViewportPose>
+      </Reveal>
     </Project>
 
     <Project>
-      <ViewportPose>
+      <Reveal>
         <Date>January 2019 - 1 year 1 month</Date>
         <Heading>HSBC — Financial Management Web App</Heading>
         <Paragraph>
           Lead developer at HSBC (based on-site, Blue Fin) building a greenfield
           financial management and reporting web application.
         </Paragraph>
-        <Paragraph>
+        <Block>
           <strong>Responsibilities and highlights:</strong>
           <List>
             <ListItem>
@@ -71,8 +72,8 @@ const Projects = () => (
               Type safety across every tier (via code generation)
             </ListItem>
           </List>
-        </Paragraph>
-        <Paragraph>
+        </Block>
+        <Block>
           <strong>Technologies used:</strong>
           <List>
             <ListItem>
@@ -88,15 +89,15 @@ const Projects = () => (
             <ListItem>ag-Grid</ListItem>
             <ListItem>Victory Charts</ListItem>
           </List>
-        </Paragraph>
+        </Block>
         <Paragraph>
           Contract via <a href="http://www.somoglobal.com">Somo</a>
         </Paragraph>
-      </ViewportPose>
+      </Reveal>
     </Project>
 
     <Project>
-      <ViewportPose>
+      <Reveal>
         <Date>June 2017 - 1 year 7 months</Date>
         <Heading>Tier 1 Investment Bank — Research Web Apps</Heading>
         <Paragraph>
@@ -122,11 +123,11 @@ const Projects = () => (
         <Paragraph>
           Contract via <a href="http://www.somoglobal.com">Somo</a>
         </Paragraph>
-      </ViewportPose>
+      </Reveal>
     </Project>
 
     <Project>
-      <ViewportPose>
+      <Reveal>
         <Date>August 2016 - 10 months</Date>
         <Heading>Commerzbank — FX Trading Mobile App</Heading>
         <Paragraph>
@@ -145,11 +146,11 @@ const Projects = () => (
         <Paragraph>
           Contract via <a href="http://www.fathomlondon.com">Fathom London</a>
         </Paragraph>
-      </ViewportPose>
+      </Reveal>
     </Project>
 
     <Project>
-      <ViewportPose>
+      <Reveal>
         <Date>April 2016 - 5 months</Date>
         <Heading>Standard Chartered — Regtech CRM Tool</Heading>
         <Paragraph>
@@ -163,11 +164,11 @@ const Projects = () => (
         <Paragraph>
           Contract via <a href="http://www.fathomlondon.com">Fathom London</a>
         </Paragraph>
-      </ViewportPose>
+      </Reveal>
     </Project>
 
     <Project>
-      <ViewportPose>
+      <Reveal>
         <Date>March 2014 - 1 year 9 months</Date>
         <Heading>Responsive.TV — Video platform SaaS</Heading>
         <Paragraph>
@@ -192,11 +193,11 @@ const Projects = () => (
         <Paragraph>
           Contract via <a href="https://www.stinkstudios.com">StinkStudios</a>
         </Paragraph>
-      </ViewportPose>
+      </Reveal>
     </Project>
 
     <Project>
-      <ViewportPose>
+      <Reveal>
         <Date>September 1999 - 14 years</Date>
         <Heading>Once upon a time...</Heading>
 
@@ -231,7 +232,7 @@ const Projects = () => (
           See <a href="https://www.linkedin.com/in/philipbulley/">LinkedIn</a>{' '}
           for detailed work and education history.
         </Paragraph>
-      </ViewportPose>
+      </Reveal>
     </Project>
   </Grid>
 );

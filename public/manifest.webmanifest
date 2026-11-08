@@ -1,0 +1,14 @@
+{
+  "name": "pb.codes — London-based freelance front-end developer",
+  "short_name": "pb.codes",
+  "start_url": "/",
+  "background_color": "#000",
+  "display": "minimal-ui",
+  "icons": [
+    {
+      "src": "/icon.png",
+      "sizes": "128x128",
+      "type": "image/png"
+    }
+  ]
+}

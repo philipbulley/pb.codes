@@ -1,6 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
-import posed from 'react-pose';
+import { motion } from 'motion/react';
 
 const inTiming = '100ms ease-out';
 const outTiming = '200ms ease-out';
@@ -50,23 +50,48 @@ export const Heading = styled.h2`
   margin: 0 0 30px;
 `;
 
-export const Paragraph = posed(styled.p`
-  margin: 0 0 30px;
-`)({
+const fade = {
   out: { opacity: 0 },
   in: { opacity: 1 },
-});
+};
 
-export const Date = posed(styled.div`
+/**
+ * Wraps a project's content and fades its children in, one after another,
+ * whenever it scrolls into view (and back out again when it leaves).
+ */
+export const Reveal = ({ children }) => (
+  <motion.div
+    initial="out"
+    whileInView="in"
+    variants={{ in: { transition: { staggerChildren: 0.1 } }, out: {} }}
+  >
+    {children}
+  </motion.div>
+);
+
+const ParagraphStyled = styled(motion.p)`
+  margin: 0 0 30px;
+`;
+export const Paragraph = props => (
+  <ParagraphStyled variants={fade} {...props} />
+);
+
+// Same as Paragraph, for content that can't live inside a <p> (e.g. lists)
+const BlockStyled = styled(motion.div)`
+  margin: 0 0 30px;
+`;
+export const Block = props => <BlockStyled variants={fade} {...props} />;
+
+const DateStyled = styled(motion.div)`
   margin: 0 0 12px;
-`)({
-  out: { opacity: 0 },
-  in: { opacity: 1, transition: { delay: 100 } },
-});
+`;
+export const Date = props => <DateStyled variants={fade} {...props} />;
 
 export const List = ({ children, ...rest }) => <ul {...rest}>{children}</ul>;
 
-export const ListItem = posed.li({
-  out: { opacity: 0 },
-  in: { opacity: 1, transition: { duration: 500 } },
-});
+export const ListItem = props => (
+  <motion.li
+    variants={{ ...fade, in: { ...fade.in, transition: { duration: 0.5 } } }}
+    {...props}
+  />
+);

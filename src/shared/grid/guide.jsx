@@ -34,8 +34,8 @@ class GridGuide extends PureComponent {
 
     return (
       show && (
-        <Container opacity={opacity}>
-          <Grid debug={fill}>
+        <Container $opacity={opacity}>
+          <Grid $debug={fill}>
             {Array(12)
               .fill()
               .map((_, i) => (
@@ -57,7 +57,7 @@ const Container = styled.div`
   height: 100vh;
   top: 0;
   z-index: 100;
-  opacity: ${({ opacity }) => opacity};
+  opacity: ${({ $opacity }) => $opacity};
 `;
 
 const Grid = styled(_Grid)`
