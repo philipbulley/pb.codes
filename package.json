@@ -21,11 +21,12 @@
     "typecheck": "react-router typegen && tsc",
     "lint": "eslint .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check": "npm run typecheck && npm run lint && npm run format:check"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/gatsbyjs/gatsby-starter-default"
+    "url": "git+https://github.com/philipbulley/pb.codes.git"
   },
   "engines": {
     "node": ">=26.13.0"
