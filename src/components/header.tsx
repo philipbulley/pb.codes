@@ -12,14 +12,6 @@ const COLLAPSE_DISTANCE = 80;
 /** How long the page nav's own animations run after navigating (see nav.tsx) */
 const NAV_SETTLE_MS = 600;
 
-/**
- * How much of a page nav link's extra drop (the active one sits lower) delays
- * its header link: 0 = all rise together, 1 = each waits for its own page link
- */
-const NAV_STAGGER = 0.5;
-
-const clamp01 = (value: number) => Math.min(Math.max(value, 0), 1);
-
 interface HeaderProps {
   /** The page nav, whose position drives when the header's nav appears */
   navRef: RefObject<HTMLElement | null>;
@@ -33,10 +25,12 @@ interface HeaderProps {
  * (without re-rendering):
  * - `--collapse`: how far the header has collapsed, keeping the title centred
  *   in the visible part
- * - `--link-reveal` (on each header nav link): how far the page nav has slid
- *   under the header. Each link rises into place in step with it, so it
- *   follows the scroll's own speed: a flick snaps it in, a slow scroll eases
- *   it in
+ * - `--link-offset` (on each header nav link): how far below its rest
+ *   position the link sits. Each link mirrors its own page nav link: as that
+ *   one slides under the header, this one rises out of the header's bottom
+ *   edge by the same share. It follows the scroll's own speed (a flick snaps
+ *   it in, a slow scroll eases it in), and the lower, active link naturally
+ *   arrives a little later
  */
 const Header = ({ navRef }: HeaderProps) => {
   const ref = useRef<HTMLDivElement>(null);
@@ -55,31 +49,37 @@ const Header = ({ navRef }: HeaderProps) => {
       el.style.setProperty('--collapse', String(scrolled / COLLAPSE_DISTANCE));
 
       // Each header link pairs with the page nav link in the same position
-      const pageRects = [...(navRef.current?.querySelectorAll('a') ?? [])].map(
-        (link) => link.getBoundingClientRect(),
-      );
+      const pageLinks = navRef.current?.querySelectorAll('a') ?? [];
       const headerLinks = headerNav.querySelectorAll<HTMLElement>('a');
-      const top = Math.min(...pageRects.map((rect) => rect.top));
-      const bottom = Math.max(...pageRects.map((rect) => rect.bottom));
-      const headerBottom = el.getBoundingClientRect().bottom;
+      const headerRect = el.getBoundingClientRect();
 
-      // Every link finishes (1) once the last page link is under the header,
-      // so they always end level. Each starts (0) once its own page link
-      // begins to go under, scaled by NAV_STAGGER: the lower, active link
-      // starts a little later and catches up
-      let anyRevealed = false;
+      let anyVisible = false;
       headerLinks.forEach((link, i) => {
-        const pageTop = pageRects[i]?.top ?? top;
-        const start = top + (pageTop - top) * NAV_STAGGER;
-        const reveal =
-          bottom > start
-            ? clamp01((headerBottom - start) / (bottom - start))
-            : 0;
-        link.style.setProperty('--link-reveal', String(reveal));
-        anyRevealed ||= reveal > 0;
+        const page = pageLinks[i]?.getBoundingClientRect();
+        // Where the link sits at rest, ignoring its transform (its offset
+        // parent is the header)
+        const restTop = headerRect.top + link.offsetTop;
+        const hiddenOffset = headerRect.bottom - restTop;
+        if (!page || page.height === 0) {
+          link.style.setProperty('--link-offset', `${hiddenOffset}px`);
+          return;
+        }
+
+        // However much of the page link has gone under the header, the same
+        // share of this link shows above the header's bottom edge, top first.
+        // It keeps tracking the scroll past that until it reaches its rest
+        // position, so every link ends level
+        const hiddenShare = Math.max(
+          (headerRect.bottom - page.top) / page.height,
+          0,
+        );
+        const top = headerRect.bottom - hiddenShare * link.offsetHeight;
+        const offset = Math.min(Math.max(top - restTop, 0), hiddenOffset);
+        link.style.setProperty('--link-offset', `${offset}px`);
+        anyVisible ||= offset < hiddenOffset;
       });
       // Out of reach while fully hidden: no focus, clicks or screen readers
-      headerNav.inert = !anyRevealed;
+      headerNav.inert = !anyVisible;
     };
 
     let frame: number | null = null;

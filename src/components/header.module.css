@@ -58,17 +58,15 @@
   font-weight: var(--font-weight-demibold);
 }
 
-/* Each link starts a full strip's height lower (clipped by the header) and
-   rises into place in step with the page nav scrolling under the header;
-   `--link-reveal` (0–1) is set per link in header.tsx */
+/* Each link sits below the header (clipped) until its page nav link starts
+   going under, then rises into place in step with it; `--link-offset` is set
+   per link in header.tsx (hidden by default until it runs) */
 .navLink {
   --hover-underline-color: var(--color-white);
-  --link-reveal: 0;
+  --link-offset: var(--header-min-height);
 
   display: inline-block;
-  transform: translateY(
-    calc((1 - var(--link-reveal)) * var(--header-min-height))
-  );
+  transform: translateY(var(--link-offset));
   will-change: transform;
   /* Leaves room for the underline below the text, matching the page nav:
      3px gap + 4px underline */
