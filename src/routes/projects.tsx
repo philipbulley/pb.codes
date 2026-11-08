@@ -87,9 +87,7 @@ const Projects = () => (
             <ListItem>Victory Charts</ListItem>
           </List>
         </Block>
-        <Paragraph>
-          Contract via <a href="http://www.somoglobal.com">Somo</a>
-        </Paragraph>
+        <Paragraph>Basis: Contract</Paragraph>
       </Reveal>
     </Project>
 
@@ -117,9 +115,7 @@ const Projects = () => (
           <ListItem>ag-Grid</ListItem>
           <ListItem>AEM integration</ListItem>
         </List>
-        <Paragraph>
-          Contract via <a href="http://www.somoglobal.com">Somo</a>
-        </Paragraph>
+        <Paragraph>Basis: Contract</Paragraph>
       </Reveal>
     </Project>
 
