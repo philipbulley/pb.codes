@@ -1,11 +1,9 @@
-import type { CSSProperties } from 'react';
 import { Link } from 'react-router';
 import { motion, type Variants } from 'motion/react';
 import Grid from '../shared/grid/grid';
 import cx from '../shared/cx';
 import { easeOutExpo } from '../shared/easing';
 import { matches, minWidth } from '../shared/media';
-import { getAccentColor } from '../shared/theme';
 import styles from './nav.module.css';
 
 const items = [
@@ -29,10 +27,9 @@ const Nav = ({ currentPath }: { currentPath: string }) => (
         >
           <Link
             className={cx(styles.link, !isActive && styles.inactive)}
-            style={{ '--item-accent': getAccentColor(to) } as CSSProperties}
             to={to}
           >
-            <span className={styles.label}>{label}</span>
+            {label}
             <motion.div
               className={styles.underline}
               variants={underlineVariants}

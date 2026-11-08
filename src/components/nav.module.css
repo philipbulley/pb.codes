@@ -29,43 +29,40 @@
 }
 
 .link {
-  display: inline-block;
-}
-
-/* Wraps the text so the hover fill covers the label, not the underline */
-.label {
   --in: 100ms ease-out;
   --out: 200ms ease-out;
 
   display: inline-block;
   position: relative;
-  isolation: isolate;
-  transition: color var(--out);
 
-  /* Fill bleeds past the text so the label itself stays aligned in the grid */
-  &::before {
+  /* Hover underline: sits exactly over the active underline (.underline).
+     Origin stays left, so it grows left to right and retracts right to left */
+  &::after {
     content: '';
     position: absolute;
-    inset: -3px;
-    z-index: -1;
-    background: var(--item-accent);
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--color-black);
     transform: scaleX(0);
     transform-origin: left;
     transition: transform var(--out);
   }
 }
 
-/* Same wipe as project links, in each section's own colour. Not applied to
-   the current section, which already shows its underline */
-@media (hover: hover) {
-  .inactive:hover .label {
-    color: var(--color-white);
-    transition: color var(--in);
+/* Once clicked, the link becomes the current section and the hover underline
+   retracts left to right instead, handing over to the slow accent underline.
+   Origin has no visual effect at full width, so switching it here is seamless */
+.link:not(.inactive)::after {
+  transform-origin: right;
+}
 
-    &::before {
-      transform: scaleX(1);
-      transition: transform var(--in);
-    }
+/* Not applied to the current section, which has its own slow accent underline */
+@media (hover: hover) {
+  .inactive:hover::after {
+    transform: scaleX(1);
+    transition: transform var(--in);
   }
 }
 
