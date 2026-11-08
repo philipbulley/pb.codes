@@ -32,6 +32,43 @@
   display: inline-block;
 }
 
+/* Wraps the text so the hover fill covers the label, not the underline */
+.label {
+  --in: 100ms ease-out;
+  --out: 200ms ease-out;
+
+  display: inline-block;
+  position: relative;
+  isolation: isolate;
+  transition: color var(--out);
+
+  /* Fill bleeds past the text so the label itself stays aligned in the grid */
+  &::before {
+    content: '';
+    position: absolute;
+    inset: -3px;
+    z-index: -1;
+    background: var(--item-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--out);
+  }
+}
+
+/* Same wipe as project links, in each section's own colour. Not applied to
+   the current section, which already shows its underline */
+@media (hover: hover) {
+  .inactive:hover .label {
+    color: var(--color-white);
+    transition: color var(--in);
+
+    &::before {
+      transform: scaleX(1);
+      transition: transform var(--in);
+    }
+  }
+}
+
 .underline {
   width: 0;
   margin-top: 3px;
