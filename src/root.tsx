@@ -41,6 +41,15 @@ export function Layout({ children }: { children: ReactNode }) {
         {children}
         <ScrollRestoration />
         <Scripts />
+        {import.meta.env.PROD && (
+          // Cloudflare Web Analytics: cookieless, and follows client-side
+          // navigation by itself
+          <script
+            type="module"
+            src="https://static.cloudflareinsights.com/beacon.min.js"
+            data-cf-beacon='{"token": "76113e784ac243e695209ae79585327a"}'
+          />
+        )}
       </body>
     </html>
   );
