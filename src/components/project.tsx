@@ -8,8 +8,10 @@ const Project = ({ className, ...props }: ComponentProps<'div'>) => (
 );
 export default Project;
 
-export const Heading = (props: ComponentProps<'h2'>) => (
-  <h2 className={styles.heading} {...props} />
+export const Heading = ({ children, ...props }: ComponentProps<'h2'>) => (
+  <h2 className={styles.heading} {...props}>
+    {children}
+  </h2>
 );
 
 const fade: Variants = {

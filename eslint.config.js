@@ -1,5 +1,7 @@
+import eslintReact from '@eslint-react/eslint-plugin';
 import js from '@eslint/js';
 import prettier from 'eslint-config-prettier';
+import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import reactHooks from 'eslint-plugin-react-hooks';
 import { defineConfig, globalIgnores } from 'eslint/config';
 import globals from 'globals';
@@ -28,8 +30,25 @@ export default defineConfig([
   },
   {
     files: ['src/**/*.{ts,tsx}'],
-    extends: [reactHooks.configs.flat.recommended],
+    extends: [
+      eslintReact.configs['strict-type-checked'],
+      reactHooks.configs.flat.recommended,
+      jsxA11y.configs.strict,
+    ],
     languageOptions: { globals: globals.browser },
+    rules: {
+      // @eslint-react re-implements the React team's hooks rules; keep the
+      // official react-hooks versions so each problem is only reported once
+      '@eslint-react/error-boundaries': 'off',
+      '@eslint-react/exhaustive-deps': 'off',
+      '@eslint-react/purity': 'off',
+      '@eslint-react/rules-of-hooks': 'off',
+      '@eslint-react/set-state-in-effect': 'off',
+      '@eslint-react/set-state-in-render': 'off',
+      '@eslint-react/static-components': 'off',
+      '@eslint-react/unsupported-syntax': 'off',
+      '@eslint-react/use-memo': 'off',
+    },
   },
   {
     files: ['*.{js,ts}'],
