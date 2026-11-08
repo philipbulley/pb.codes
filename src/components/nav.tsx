@@ -1,20 +1,29 @@
+import type { Ref } from 'react';
 import { Link } from 'react-router';
 import { motion, type Variants } from 'motion/react';
 import Grid from '../shared/grid/grid';
 import cx from '../shared/cx';
 import { easeOutExpo } from '../shared/easing';
 import { matches, minWidth } from '../shared/media';
+import underline from '../shared/hover-underline.module.css';
 import styles from './nav.module.css';
 
-const items = [
+/** The site's sections, shared by this nav and the header's compact nav */
+export const navItems = [
   { to: '/projects', label: 'Projects.' },
   { to: '/about', label: 'About.' },
   { to: '/contact', label: 'Contact.' },
 ];
 
-const Nav = ({ currentPath }: { currentPath: string }) => (
-  <Grid className={styles.grid}>
-    {items.map(({ to, label }) => {
+interface NavProps {
+  currentPath: string;
+  /** The header measures this to know when the nav has scrolled under it */
+  ref?: Ref<HTMLDivElement>;
+}
+
+const Nav = ({ currentPath, ref }: NavProps) => (
+  <Grid className={styles.grid} ref={ref}>
+    {navItems.map(({ to, label }) => {
       const isActive = currentPath.startsWith(to);
 
       return (
@@ -26,7 +35,11 @@ const Nav = ({ currentPath }: { currentPath: string }) => (
           animate={isActive ? 'active' : 'inactive'}
         >
           <Link
-            className={cx(styles.link, !isActive && styles.inactive)}
+            className={cx(
+              styles.link,
+              underline.link,
+              !isActive && underline.inactive,
+            )}
             to={to}
             // Keep the reader where they are (and the header as collapsed as
             // it was) when switching sections, rather than jumping to the top

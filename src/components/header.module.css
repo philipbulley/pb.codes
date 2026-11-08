@@ -5,8 +5,10 @@
   --header-collapse-distance: calc(
     var(--header-max-height) - var(--header-min-height)
   );
-  /* 0 = expanded, 1 = collapsed; set from scroll position in header.tsx */
+  /* Both 0–1, set from scroll position in header.tsx:
+     how collapsed the header is, and how far its nav has risen into view */
   --collapse: 0;
+  --nav-reveal: 0;
 
   position: sticky;
   top: calc(-1 * var(--header-collapse-distance));
@@ -14,6 +16,8 @@
   grid-column: span 12;
   width: 100%;
   height: var(--header-max-height);
+  /* Clips the header nav while it's still below the header */
+  overflow: hidden;
   color: white;
   background-color: var(--color-accent);
   font-weight: var(--font-weight-bold);
@@ -23,8 +27,9 @@
   height: 100%;
 }
 
-.link {
-  grid-column: span 12;
+.title {
+  grid-row: 1;
+  grid-column: 1 / -1;
   align-self: center;
   justify-self: start;
   text-decoration: none;
@@ -37,4 +42,55 @@
     )
     scale(calc(1 - var(--collapse) * 0.2));
   will-change: transform;
+}
+
+/* Right aligned in the strip that stays visible once collapsed. It starts a
+   full strip's height lower (clipped by the header) and rises into place in
+   step with the page nav scrolling under the header */
+.nav {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  justify-self: end;
+  align-self: end;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--header-min-height);
+  /* Balances the links' underline space so the text centres on the title */
+  padding-top: 7px;
+  font-size: 14px;
+  font-weight: var(--font-weight-demibold);
+  transform: translateY(
+    calc((1 - var(--nav-reveal)) * var(--header-min-height))
+  );
+  will-change: transform;
+}
+
+.navLink {
+  --hover-underline-color: var(--color-white);
+
+  display: inline-block;
+  /* Leaves room for the underline below the text, matching the page nav:
+     3px gap + 4px underline */
+  padding-bottom: 7px;
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+/* Same thickness and gap as the page nav's underline, in white */
+.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--color-white);
+}
+
+@media (min-width: 768px) {
+  .nav {
+    gap: 28px;
+    font-size: 18px;
+  }
 }
