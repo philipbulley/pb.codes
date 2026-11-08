@@ -1,9 +1,15 @@
-import { useEffect, useRef, type RefObject } from 'react';
+import {
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  type MouseEvent,
+  type RefObject,
+} from 'react';
 import { Link, useLocation } from 'react-router';
 import Grid from '../shared/grid/grid';
 import cx from '../shared/cx';
 import underline from '../shared/hover-underline.module.css';
-import { navItems } from './nav';
+import { getActiveNavOffset, navItems } from './nav';
 import styles from './header.module.css';
 
 /** Must match `--header-collapse-distance` in header.module.css */
@@ -35,7 +41,70 @@ interface HeaderProps {
 const Header = ({ navRef }: HeaderProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const headerNavRef = useRef<HTMLDivElement>(null);
+  // Where to scroll once the page a header link points to has rendered
+  const pendingScrollRef = useRef<number | null>(null);
   const { pathname } = useLocation();
+
+  /**
+   * The scroll position where the page nav link at `index`, once it's the
+   * active one, has gone fully under the header and `headerLink` has just
+   * come to rest: the header nav fully in, the page nav just out of sight and
+   * the content starting right below. The page nav sits in the same place on
+   * every page, so this is worked out before navigating.
+   */
+  const getSnapTarget = (index: number, headerLink: HTMLElement) => {
+    const el = ref.current;
+    const pageNav = navRef.current;
+    const item = pageNav?.children[index];
+    const pageLink = item?.querySelector('a');
+    if (!el || !pageNav || !item || !pageLink) {
+      return null;
+    }
+
+    // The page link's top in the document once it settles as the active link,
+    // ignoring its current animation: its item starts at the top of the nav
+    const pageTop =
+      pageNav.getBoundingClientRect().top +
+      window.scrollY +
+      (pageLink.getBoundingClientRect().top -
+        item.getBoundingClientRect().top) +
+      getActiveNavOffset();
+
+    // Inverse of `update` below: how far under the header the page link must
+    // be for the header link to have just reached its rest position
+    const headerRect = el.getBoundingClientRect();
+    const restTop = headerRect.top + headerLink.offsetTop;
+    const hiddenShare = (headerRect.bottom - restTop) / headerLink.offsetHeight;
+    const pageTopInView =
+      headerRect.bottom - hiddenShare * pageLink.offsetHeight;
+
+    return Math.ceil(pageTop - pageTopInView);
+  };
+
+  // Header links are only reachable once scrolled well down the page, so
+  // rather than keep that (possibly deep) position, land on the new page just
+  // above its content
+  const handleHeaderLinkClick = (
+    index: number,
+    isActive: boolean,
+    event: MouseEvent<HTMLAnchorElement>,
+  ) => {
+    const target = getSnapTarget(index, event.currentTarget);
+    if (isActive && target !== null) {
+      // Same page: nothing re-renders, so go there now
+      window.scrollTo({ top: target, behavior: 'instant' });
+    } else {
+      pendingScrollRef.current = target;
+    }
+  };
+
+  // Before the new page paints, so it never shows at the old scroll position
+  useLayoutEffect(() => {
+    if (pendingScrollRef.current !== null) {
+      window.scrollTo({ top: pendingScrollRef.current, behavior: 'instant' });
+      pendingScrollRef.current = null;
+    }
+  }, [pathname]);
 
   useEffect(() => {
     const el = ref.current;
@@ -124,7 +193,7 @@ const Header = ({ navRef }: HeaderProps) => {
           pb.codes
         </Link>
         <div className={styles.nav} ref={headerNavRef}>
-          {navItems.map(({ to, label }) => {
+          {navItems.map(({ to, label }, index) => {
             const isActive = pathname.startsWith(to);
 
             return (
@@ -136,7 +205,11 @@ const Header = ({ navRef }: HeaderProps) => {
                   isActive ? styles.active : underline.inactive,
                 )}
                 to={to}
+                // Scrolling is handled here instead (see handleHeaderLinkClick)
                 preventScrollReset
+                onClick={(event) => {
+                  handleHeaderLinkClick(index, isActive, event);
+                }}
               >
                 {label}
               </Link>

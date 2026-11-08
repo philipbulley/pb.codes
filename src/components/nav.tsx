@@ -59,6 +59,12 @@ const Nav = ({ currentPath, ref }: NavProps) => (
 
 export default Nav;
 
+/**
+ * How far the active link drops below the others once its animation settles.
+ * Browser only (reads the viewport width)
+ */
+export const getActiveNavOffset = () => (matches(minWidth.sm) ? 50 : 0);
+
 const navItemTransition = { ease: easeOutExpo, duration: 0.5 };
 const navItemVariants: Variants = {
   init: {
@@ -67,7 +73,7 @@ const navItemVariants: Variants = {
   },
   // Resolved when the animation starts, so `matches` only runs in the browser
   active: () => ({
-    y: matches(minWidth.sm) ? 50 : 0,
+    y: getActiveNavOffset(),
     opacity: 1,
     transition: navItemTransition,
   }),
