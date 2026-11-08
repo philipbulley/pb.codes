@@ -1,10 +1,11 @@
 import type { ComponentProps } from 'react';
 import { motion, type Variants } from 'motion/react';
 import cx from '../shared/cx';
+import wipe from '../shared/link-wipe.module.css';
 import styles from './project.module.css';
 
 const Project = ({ className, ...props }: ComponentProps<'div'>) => (
-  <div className={cx(styles.project, className)} {...props} />
+  <div className={cx(styles.project, wipe.links, className)} {...props} />
 );
 export default Project;
 

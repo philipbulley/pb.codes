@@ -1,0 +1,40 @@
+/*
+ * Hover effect: the accent colour wipes in behind the text from the left and
+ * the text turns white. Use `.link` on an anchor, or `.links` on a container
+ * to apply it to every anchor inside (e.g. links in project copy).
+ * Colour, weight and size are left to the component.
+ */
+.link,
+.links a {
+  --in: 100ms ease-out;
+  --out: 200ms ease-out;
+
+  display: inline-block;
+  position: relative;
+  /* Keeps the fill behind the text but in front of anything behind the link */
+  isolation: isolate;
+  padding: 3px;
+  text-decoration: none;
+  transition: color var(--out);
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: var(--color-accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--out);
+  }
+
+  &:hover {
+    color: var(--color-white);
+    transition: color var(--in);
+
+    &::before {
+      transform: scaleX(1);
+      transition: transform var(--in);
+    }
+  }
+}
