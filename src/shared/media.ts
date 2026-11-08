@@ -8,7 +8,7 @@ export const breakpoint = {
 type Breakpoint = keyof typeof breakpoint;
 
 export const minWidth = Object.fromEntries(
-  Object.entries(breakpoint).map(([key, px]) => [key, `(min-width: ${px}px)`])
+  Object.entries(breakpoint).map(([key, px]) => [key, `(min-width: ${px}px)`]),
 ) as Record<Breakpoint, string>;
 
 export const matches = (query: string) => window.matchMedia(query).matches;

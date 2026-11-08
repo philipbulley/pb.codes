@@ -8,7 +8,8 @@ const DAY = 24 * 60 * 60 * 1000;
 const buildDay = Math.floor(Date.parse(__BUILD_DATE__) / DAY);
 const getToday = () => Math.floor(Date.now() / DAY);
 const getBuildDay = () => buildDay;
-const subscribe = () => () => {};
+// Nothing to subscribe to: the date only needs to be correct when rendering
+const subscribe = () => () => undefined;
 
 /** Today's date (to the day), safe to render in pre-rendered pages */
 const useToday = () =>

@@ -17,14 +17,16 @@ const GridGuide = ({ opacity = 0.5 }: { opacity?: number }) => {
       }
 
       if (code === 'Semicolon') {
-        setShow(isShown => !isShown);
+        setShow((isShown) => !isShown);
       } else if (code === 'Quote' && show) {
-        setFill(isFilled => !isFilled);
+        setFill((isFilled) => !isFilled);
       }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, [show]);
 
   if (!show) {
