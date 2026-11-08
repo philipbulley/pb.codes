@@ -15,11 +15,121 @@ import { useLayoutEffect, useRef, type RefObject } from 'react';
 /** The collapsed header's height: content is never scrolled above this */
 const HEADER_MIN_HEIGHT = 60;
 
+/**
+ * Experimental: after landing on a page that needed room, wait a moment, then
+ * glide back up to where the page can scroll by itself (the top, for a page
+ * that fits the viewport), revealing the page nav and dropping the room. Any
+ * scrolling, key or pointer input from the reader stops it. Skipped entirely
+ * when the OS asks for reduced motion: the room stays, and shrinks as usual
+ * when the reader scrolls up. `easing` picks a curve from `easings` below.
+ */
+const SETTLE = {
+  enabled: true,
+  delayMs: 500,
+  durationMs: 2000,
+  easing: 'expo',
+} satisfies { easing: keyof typeof easings } & Record<string, unknown>;
+
 let spacer: HTMLElement | null = null;
 let content: HTMLElement | null = null;
 let room = 0;
 let lastScrollY = 0;
 let pendingScroll: number | null = null;
+let settleTimer: number | null = null;
+let settleFrame: number | null = null;
+
+/**
+ * The most pronounced ease-in-out: a very slow start that builds to a quick
+ * middle, then a long, soft landing. Pairs with the site's other expo
+ * easings (see shared/easing.ts)
+ */
+const easeInOutExpo = (t: number) => {
+  if (t <= 0) {
+    return 0;
+  }
+  if (t >= 1) {
+    return 1;
+  }
+  return t < 0.5 ? 2 ** (20 * t - 10) / 2 : (2 - 2 ** (-20 * t + 10)) / 2;
+};
+
+/**
+ * Follows a quarter circle each way: eases in less sluggishly than expo,
+ * builds to a steep middle, then lands with a firmer, shorter tail
+ */
+const easeInOutCirc = (t: number) =>
+  t < 0.5
+    ? (1 - Math.sqrt(1 - (2 * t) ** 2)) / 2
+    : (Math.sqrt(1 - (-2 * t + 2) ** 2) + 1) / 2;
+
+/**
+ * Power curves: the higher the power, the slower the start, the steeper the
+ * middle and the softer the landing. Quart (4th) sits between cubic and
+ * quint; quint (5th) is the closest of these to expo
+ */
+const easeInOutQuart = (t: number) =>
+  t < 0.5 ? 8 * t ** 4 : 1 - (-2 * t + 2) ** 4 / 2;
+
+const easeInOutQuint = (t: number) =>
+  t < 0.5 ? 16 * t ** 5 : 1 - (-2 * t + 2) ** 5 / 2;
+
+const easings = {
+  quart: easeInOutQuart,
+  quint: easeInOutQuint,
+  expo: easeInOutExpo,
+  circ: easeInOutCirc,
+};
+
+const cancelSettle = () => {
+  if (settleTimer !== null) {
+    window.clearTimeout(settleTimer);
+    settleTimer = null;
+  }
+  if (settleFrame !== null) {
+    window.cancelAnimationFrame(settleFrame);
+    settleFrame = null;
+  }
+};
+
+const scheduleSettle = () => {
+  cancelSettle();
+  if (
+    !SETTLE.enabled ||
+    room === 0 ||
+    window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  ) {
+    return;
+  }
+
+  settleTimer = window.setTimeout(() => {
+    settleTimer = null;
+    const from = window.scrollY;
+    // Furthest the page could scroll without any room
+    const to = Math.max(
+      document.documentElement.scrollHeight - room - window.innerHeight,
+      0,
+    );
+    if (from - to < 1) {
+      return;
+    }
+
+    // Room shrinks along the way as each scroll event comes in (see `shrink`)
+    const ease = easings[SETTLE.easing];
+    const start = performance.now();
+    const step = (now: number) => {
+      const t = Math.min((now - start) / SETTLE.durationMs, 1);
+      window.scrollTo({
+        top: from + (to - from) * ease(t),
+        behavior: 'instant',
+      });
+      settleFrame = t < 1 ? window.requestAnimationFrame(step) : null;
+    };
+    settleFrame = window.requestAnimationFrame(step);
+  }, SETTLE.delayMs);
+};
+
+/** Reader input that should stop a settle that's waiting or under way */
+const interruptEvents = ['wheel', 'touchstart', 'keydown', 'mousedown'];
 
 const setRoom = (px: number) => {
   room = Math.max(Math.round(px), 0);
@@ -33,6 +143,7 @@ export const scrollToWithRoom = (target: number) => {
   const viewport = window.innerHeight;
   const pageHeight = () => document.documentElement.scrollHeight;
 
+  cancelSettle();
   setRoom(0);
   // Never so far that the content starts above the header: room is only for
   // keeping the page's top part where it was, not for scrolling into blank space
@@ -105,10 +216,20 @@ export const useScrollRoom = (
     window.addEventListener('scroll', shrink, { passive: true });
     window.addEventListener('resize', shrink);
     document.addEventListener('click', rememberScroll, { capture: true });
+    for (const type of interruptEvents) {
+      window.addEventListener(type, cancelSettle, {
+        capture: true,
+        passive: true,
+      });
+    }
     return () => {
       window.removeEventListener('scroll', shrink);
       window.removeEventListener('resize', shrink);
       document.removeEventListener('click', rememberScroll, { capture: true });
+      for (const type of interruptEvents) {
+        window.removeEventListener(type, cancelSettle, { capture: true });
+      }
+      cancelSettle();
       spacer = null;
       content = null;
     };
@@ -124,5 +245,6 @@ export const useScrollRoom = (
     const target = pendingScroll ?? lastScrollY;
     pendingScroll = null;
     scrollToWithRoom(target);
+    scheduleSettle();
   }, [pathname]);
 };
