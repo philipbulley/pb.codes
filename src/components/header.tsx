@@ -1,13 +1,8 @@
-import {
-  useEffect,
-  useLayoutEffect,
-  useRef,
-  type MouseEvent,
-  type RefObject,
-} from 'react';
+import { useEffect, useRef, type MouseEvent, type RefObject } from 'react';
 import { Link, useLocation } from 'react-router';
 import Grid from '../shared/grid/grid';
 import cx from '../shared/cx';
+import { requestScroll, scrollToWithRoom } from '../shared/scroll-room';
 import underline from '../shared/hover-underline.module.css';
 import { getActiveNavOffset, navItems } from './nav';
 import styles from './header.module.css';
@@ -41,8 +36,6 @@ interface HeaderProps {
 const Header = ({ navRef }: HeaderProps) => {
   const ref = useRef<HTMLDivElement>(null);
   const headerNavRef = useRef<HTMLDivElement>(null);
-  // Where to scroll once the page a header link points to has rendered
-  const pendingScrollRef = useRef<number | null>(null);
   const { pathname } = useLocation();
 
   /**
@@ -90,21 +83,18 @@ const Header = ({ navRef }: HeaderProps) => {
     event: MouseEvent<HTMLAnchorElement>,
   ) => {
     const target = getSnapTarget(index, event.currentTarget);
-    if (isActive && target !== null) {
+    if (target === null) {
+      return;
+    }
+    if (isActive) {
       // Same page: nothing re-renders, so go there now
-      window.scrollTo({ top: target, behavior: 'instant' });
+      scrollToWithRoom(target);
     } else {
-      pendingScrollRef.current = target;
+      // Applied as the new page renders, before it paints, with room added if
+      // the page is too short to scroll that far (see scroll-room.ts)
+      requestScroll(target);
     }
   };
-
-  // Before the new page paints, so it never shows at the old scroll position
-  useLayoutEffect(() => {
-    if (pendingScrollRef.current !== null) {
-      window.scrollTo({ top: pendingScrollRef.current, behavior: 'instant' });
-      pendingScrollRef.current = null;
-    }
-  }, [pathname]);
 
   useEffect(() => {
     const el = ref.current;

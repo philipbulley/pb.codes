@@ -11,3 +11,9 @@
 .main {
   flex: 1 0 auto;
 }
+
+/* Height set from scroll position in shared/scroll-room.ts */
+.spacer {
+  flex: none;
+  height: 0;
+}
