@@ -75,7 +75,12 @@
   text-decoration: none;
 }
 
-/* Same thickness and gap as the page nav's underline, in white */
+/* Same thickness, gap and entrance as the page nav's active underline, in
+   white: grows in left to right whenever a link becomes the current section
+   (the page nav's underlineTransition: easeOutExpo over 5s). Meanwhile the
+   clicked link's white hover underline retracts left to right (see
+   shared/hover-underline.module.css), and the previous section's underline
+   goes at once, as in the page nav */
 .active::before {
   content: '';
   position: absolute;
@@ -84,6 +89,18 @@
   width: 100%;
   height: 4px;
   background: var(--color-white);
+  transform-origin: left;
+  animation: underline-in 5s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+@keyframes underline-in {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
 }
 
 @media (min-width: 768px) {
