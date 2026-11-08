@@ -1,4 +1,3 @@
-import React from 'react';
 import Grid from '../shared/grid/grid';
 import styles from './bio.module.css';
 

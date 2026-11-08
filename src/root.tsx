@@ -1,12 +1,13 @@
-import React from 'react';
+import type { ReactNode } from 'react';
 import { Links, Meta, Outlet, Scripts, ScrollRestoration } from 'react-router';
+import type { Route } from './+types/root';
 import SiteLayout from './components/layout';
 import { getAccentColor } from './shared/theme';
 import './shared/fonts.css';
 import './shared/theme.css';
 import './shared/global.css';
 
-export const meta = ({ location }) => [
+export const meta = ({ location }: Route.MetaArgs) => [
   { title: 'pb.codes' },
   {
     name: 'description',
@@ -21,13 +22,13 @@ export const meta = ({ location }) => [
   { name: 'theme-color', content: getAccentColor(location.pathname) },
 ];
 
-export const links = () => [
+export const links: Route.LinksFunction = () => [
   { rel: 'icon', type: 'image/png', href: '/favicon.png' },
   { rel: 'apple-touch-icon', href: '/apple-touch-icon.png' },
   { rel: 'manifest', href: '/manifest.webmanifest' },
 ];
 
-export function Layout({ children }) {
+export function Layout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <head>

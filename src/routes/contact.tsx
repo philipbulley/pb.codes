@@ -1,4 +1,4 @@
-import React from 'react';
+import type { ComponentProps } from 'react';
 import { motion } from 'motion/react';
 import Grid from '../shared/grid/grid';
 import cx from '../shared/cx';
@@ -29,7 +29,9 @@ const Contact = () => (
 
 export default Contact;
 
-const Anchor = ({ big, ...props }) => (
+type AnchorProps = ComponentProps<typeof motion.a> & { big?: boolean };
+
+const Anchor = ({ big = false, ...props }: AnchorProps) => (
   <motion.a
     className={cx(styles.anchor, big && styles.big)}
     variants={{ init: { opacity: 0 }, show: { opacity: 1 } }}

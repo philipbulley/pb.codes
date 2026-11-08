@@ -1,12 +1,12 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import type { ComponentProps } from 'react';
+import { motion, type Variants } from 'motion/react';
 import Grid from '../shared/grid/grid';
 import useToday from '../shared/use-today';
 import commodore64Src from '../images/commodore-64-c.jpg';
 import styles from './about.module.css';
 
 // Industry experience since 1999, ticking over each August
-const yearsSince1999 = date =>
+const yearsSince1999 = (date: Date) =>
   date.getFullYear() - 1999 - (date.getMonth() < 7 ? 1 : 0);
 
 const About = () => {
@@ -65,23 +65,25 @@ const About = () => {
 
 export default About;
 
-const containerVariants = {
+const containerVariants: Variants = {
   init: {},
   show: { transition: { staggerChildren: 0.3 } },
 };
 
-const fade = {
+const fade: Variants = {
   init: { opacity: 0 },
   show: { opacity: 1 },
 };
 
-const SubHeading = props => (
+const SubHeading = (props: ComponentProps<typeof motion.h2>) => (
   <motion.h2 className={styles.subHeading} variants={fade} {...props} />
 );
 
-const paragraphVariants = {
+const paragraphVariants: Variants = {
   ...fade,
-  show: { ...fade.show, transition: { duration: 1, ease: 'linear' } },
+  show: { opacity: 1, transition: { duration: 1, ease: 'linear' } },
 };
 
-const Paragraph = props => <motion.p variants={paragraphVariants} {...props} />;
+const Paragraph = (props: ComponentProps<typeof motion.p>) => (
+  <motion.p variants={paragraphVariants} {...props} />
+);

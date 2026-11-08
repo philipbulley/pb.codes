@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router';
 import Grid from '../shared/grid/grid';
 import styles from './header.module.css';

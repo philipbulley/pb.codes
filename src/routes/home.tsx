@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'motion/react';
+import type { ComponentProps } from 'react';
+import { motion, type Variants } from 'motion/react';
 import Grid from '../shared/grid/grid';
 import styles from './home.module.css';
 
@@ -27,14 +27,14 @@ const IndexPage = () => (
 
 export default IndexPage;
 
-const containerVariants = {
+const containerVariants: Variants = {
   init: {},
   // Delay lives here rather than on the children: in motion a child's own
   // `delay` replaces its stagger offset instead of adding to it
   show: { transition: { delayChildren: 1, staggerChildren: 0.5 } },
 };
 
-const paragraphVariants = {
+const paragraphVariants: Variants = {
   init: {
     opacity: 0,
     y: '-5px',
@@ -46,7 +46,7 @@ const paragraphVariants = {
   },
 };
 
-const Paragraph = props => (
+const Paragraph = (props: ComponentProps<typeof motion.p>) => (
   <motion.p
     className={styles.paragraph}
     variants={paragraphVariants}

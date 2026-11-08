@@ -1,6 +1,5 @@
-import React from 'react';
-import romanize from 'romanize';
 import Grid from '../shared/grid/grid';
+import romanize from '../shared/romanize';
 import useToday from '../shared/use-today';
 import styles from './footer.module.css';
 

@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [reactRouter()],
   define: {
-    // See shared/use-today.js
+    // See src/shared/use-today.ts
     __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
   },
 });

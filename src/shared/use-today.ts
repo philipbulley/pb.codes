@@ -3,7 +3,7 @@ import { useSyncExternalStore } from 'react';
 const DAY = 24 * 60 * 60 * 1000;
 
 // Pages are pre-rendered at build time, so hydrate with the build date
-// (injected by vite.config.js) then switch to today, rather than letting
+// (injected by vite.config.ts) then switch to today, rather than letting
 // the two disagree once the year rolls over
 const buildDay = Math.floor(Date.parse(__BUILD_DATE__) / DAY);
 const getToday = () => Math.floor(Date.now() / DAY);

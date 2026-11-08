@@ -1,6 +1,5 @@
-import React from 'react';
 import { Link } from 'react-router';
-import { motion } from 'motion/react';
+import { motion, type Variants } from 'motion/react';
 import Grid from '../shared/grid/grid';
 import { easeOutExpo } from '../shared/easing';
 import { matches, minWidth } from '../shared/media';
@@ -12,7 +11,7 @@ const items = [
   { to: '/contact', label: 'Contact.' },
 ];
 
-const Nav = ({ currentPath }) => (
+const Nav = ({ currentPath }: { currentPath: string }) => (
   <Grid className={styles.grid}>
     {items.map(({ to, label }) => (
       <motion.div
@@ -37,7 +36,7 @@ const Nav = ({ currentPath }) => (
 export default Nav;
 
 const navItemTransition = { ease: easeOutExpo, duration: 0.5 };
-const navItemVariants = {
+const navItemVariants: Variants = {
   init: {
     y: 0,
     opacity: 0,
@@ -56,7 +55,7 @@ const navItemVariants = {
 };
 
 const underlineTransition = { ease: easeOutExpo, duration: 5 };
-const underlineVariants = {
+const underlineVariants: Variants = {
   active: { width: '100%', transition: underlineTransition },
   inactive: { width: 0, transition: { duration: 0 } },
 };
