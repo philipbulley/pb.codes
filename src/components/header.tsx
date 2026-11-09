@@ -1,15 +1,270 @@
-import { Link } from 'react-router';
+import { useEffect, useRef, type RefObject } from 'react';
+import { Link, useLocation } from 'react-router';
 import Grid from '../shared/grid/grid';
+import cx from '../shared/cx';
+import {
+  requestScroll,
+  scrollToWithRoom,
+  settleScroll,
+} from '../shared/scroll-room';
+import underline from '../shared/hover-underline.module.css';
+import { measureHeader, STICKY_HEADER_ATTRIBUTE } from '../shared/header-size';
+import { getActiveNavOffset, getCurrentActiveNavOffset, navItems } from './nav';
 import styles from './header.module.css';
 
-const Header = () => (
-  <div className={styles.header}>
-    <Grid className={styles.grid}>
-      <Link className={styles.link} to="/">
-        pb.codes
-      </Link>
-    </Grid>
-  </div>
-);
+/**
+ * Where the page nav link at `index` sits in the viewport once its own
+ * animation has settled, ignoring any that's under way: after navigating, the
+ * previously active link takes a moment to rise back into line, and the header
+ * shouldn't follow that. `drop` is how far it settles below the others (the
+ * active link's offset, or 0). Its item starts at the top of the nav.
+ */
+const getSettledPageLink = (
+  pageNav: HTMLElement | null,
+  index: number,
+  drop: number,
+) => {
+  const item = pageNav?.children[index];
+  const pageLink = item?.querySelector('a');
+  if (!pageNav || !item || !pageLink) {
+    return null;
+  }
+  return {
+    top:
+      pageNav.getBoundingClientRect().top +
+      (pageLink.getBoundingClientRect().top -
+        item.getBoundingClientRect().top) +
+      drop,
+    height: pageLink.offsetHeight,
+  };
+};
+
+/**
+ * How far a header nav link's top sits below the header's top at rest,
+ * measured directly (minus the link's own reveal transform), so it doesn't
+ * depend on which element the link's offsets are measured from
+ */
+const getRestOffsetInHeader = (link: HTMLElement, headerTop: number) => {
+  const { transform } = getComputedStyle(link);
+  const shift =
+    transform && transform !== 'none'
+      ? new DOMMatrixReadOnly(transform).m42
+      : 0;
+  return link.getBoundingClientRect().top - shift - headerTop;
+};
+
+interface HeaderProps {
+  /** The page nav, whose position drives when the header's nav appears */
+  navRef: RefObject<HTMLElement | null>;
+}
+
+/**
+ * The header is `position: sticky` with a negative `top`, so it scrolls away
+ * naturally until only its minimum height remains visible, then sticks.
+ *
+ * Two values are written as CSS custom properties every frame the page moves
+ * (without re-rendering):
+ * - `--collapse`: how far the header has collapsed, keeping the title centred
+ *   in the visible part
+ * - `--link-offset` (on each header nav link): how far below its rest
+ *   position the link sits. Each link mirrors its own page nav link: as that
+ *   one slides under the header, this one rises out of the header's bottom
+ *   edge by the same share. It follows the scroll's own speed (a flick snaps
+ *   it in, a slow scroll eases it in), and the lower, active link naturally
+ *   arrives a little later
+ */
+const Header = ({ navRef }: HeaderProps) => {
+  const ref = useRef<HTMLDivElement>(null);
+  const headerNavRef = useRef<HTMLDivElement>(null);
+  const { pathname } = useLocation();
+
+  /**
+   * The scroll position where the page nav link at `index` has gone fully
+   * under the header and its header link has just come to rest: the header
+   * nav fully in, the page nav just out of sight and the content starting
+   * right below. Scrolling down a pixel more would start the header nav
+   * moving. `drop` is how far that page link will settle below the others.
+   * The page nav sits in the same place on every page, so this is worked out
+   * before navigating.
+   */
+  const getSnapTarget = (index: number, drop: number) => {
+    const el = ref.current;
+    const page = getSettledPageLink(navRef.current, index, drop);
+    const headerLink = headerNavRef.current?.querySelectorAll('a')[index];
+    if (!el || !page || !headerLink) {
+      return null;
+    }
+    const pageTop = page.top + window.scrollY;
+
+    // Inverse of `update` below: how far under the header the page link must
+    // be for the header link to have just reached its rest position, with the
+    // header collapsed (as it always is by then)
+    const { collapseDistance, minHeight } = measureHeader(el);
+    const headerTop = -collapseDistance;
+    const headerBottom = minHeight;
+    const restTop =
+      headerTop +
+      getRestOffsetInHeader(headerLink, el.getBoundingClientRect().top);
+    const hiddenShare = (headerBottom - restTop) / headerLink.offsetHeight;
+    const pageTopInView = headerBottom - hiddenShare * page.height;
+
+    return Math.ceil(pageTop - pageTopInView);
+  };
+
+  // Header links are only reachable once scrolled well down the page, so
+  // rather than keep that (possibly deep) position, land on the new page just
+  // above its content
+  const handleHeaderLinkClick = (index: number, isActive: boolean) => {
+    // The clicked link will be the active one on the page it opens: it keeps
+    // its current drop if it already is, else takes one for this width
+    const target = getSnapTarget(
+      index,
+      isActive ? getCurrentActiveNavOffset() : getActiveNavOffset(),
+    );
+    if (target === null) {
+      return;
+    }
+    if (isActive) {
+      // Same page: nothing re-renders, so go there now
+      scrollToWithRoom(target);
+    } else {
+      // Applied as the new page renders, before it paints, with room added if
+      // the page is too short to scroll that far (see scroll-room.ts)
+      requestScroll(target);
+    }
+  };
+
+  useEffect(() => {
+    const el = ref.current;
+    const headerNav = headerNavRef.current;
+    if (!el || !headerNav) {
+      return;
+    }
+
+    const update = () => {
+      const { collapseDistance } = measureHeader(el);
+      const scrolled = Math.min(Math.max(window.scrollY, 0), collapseDistance);
+      el.style.setProperty(
+        '--collapse',
+        String(collapseDistance > 0 ? scrolled / collapseDistance : 1),
+      );
+
+      // Each header link pairs with the page nav link in the same position,
+      // where it settles rather than wherever its own animation has got to
+      const headerLinks = headerNav.querySelectorAll<HTMLElement>('a');
+      const headerRect = el.getBoundingClientRect();
+
+      let anyVisible = false;
+      headerLinks.forEach((link, i) => {
+        const isActive = pathname.startsWith(navItems[i]?.to ?? '');
+        const page = getSettledPageLink(
+          navRef.current,
+          i,
+          isActive ? getCurrentActiveNavOffset() : 0,
+        );
+        const restTop =
+          headerRect.top + getRestOffsetInHeader(link, headerRect.top);
+        const hiddenOffset = headerRect.bottom - restTop;
+        if (!page || page.height === 0) {
+          link.style.setProperty('--link-offset', `${hiddenOffset}px`);
+          return;
+        }
+
+        // However much of the page link has gone under the header, the same
+        // share of this link shows above the header's bottom edge, top first.
+        // It keeps tracking the scroll past that until it reaches its rest
+        // position, so every link ends level
+        const hiddenShare = Math.max(
+          (headerRect.bottom - page.top) / page.height,
+          0,
+        );
+        const top = headerRect.bottom - hiddenShare * link.offsetHeight;
+        const offset = Math.min(Math.max(top - restTop, 0), hiddenOffset);
+        link.style.setProperty('--link-offset', `${offset}px`);
+        anyVisible ||= offset < hiddenOffset;
+      });
+      // Out of reach while fully hidden: no focus, clicks or screen readers
+      headerNav.inert = !anyVisible;
+    };
+
+    let frame: number | null = null;
+    const scheduleUpdate = () => {
+      frame ??= window.requestAnimationFrame(() => {
+        frame = null;
+        update();
+      });
+    };
+
+    update();
+    window.addEventListener('scroll', scheduleUpdate, { passive: true });
+    window.addEventListener('resize', scheduleUpdate);
+    return () => {
+      window.removeEventListener('scroll', scheduleUpdate);
+      window.removeEventListener('resize', scheduleUpdate);
+      if (frame !== null) {
+        window.cancelAnimationFrame(frame);
+      }
+    };
+  }, [navRef, pathname]);
+
+  return (
+    <div
+      className={styles.header}
+      ref={ref}
+      {...{ [STICKY_HEADER_ATTRIBUTE]: '' }}
+    >
+      <Grid className={styles.grid}>
+        <Link
+          className={styles.title}
+          to="/"
+          // Home opens no further down than where the header nav has just come
+          // to rest (as the header nav lands; home has no active link), with
+          // room if needed, then settles to the top so the bio and nav come
+          // into view: glided like Contact's settle, or straight to the top
+          // with reduced motion. Scrolling is handled in scroll-room.ts
+          // rather than reset by the router
+          preventScrollReset
+          onClick={() => {
+            if (pathname === '/') {
+              settleScroll(0);
+              return;
+            }
+            // Home has no active link, so no drop
+            const restPoint = getSnapTarget(0, 0) ?? window.scrollY;
+            requestScroll(Math.min(window.scrollY, restPoint), {
+              settleTo: 0,
+            });
+          }}
+        >
+          pb.codes
+        </Link>
+        <div className={styles.nav} ref={headerNavRef}>
+          {navItems.map(({ to, label }, index) => {
+            const isActive = pathname.startsWith(to);
+
+            return (
+              <Link
+                key={to}
+                className={cx(
+                  styles.navLink,
+                  underline.link,
+                  isActive ? styles.active : underline.inactive,
+                )}
+                to={to}
+                // Scrolling is handled here instead (see handleHeaderLinkClick)
+                preventScrollReset
+                onClick={() => {
+                  handleHeaderLinkClick(index, isActive);
+                }}
+              >
+                {label}
+              </Link>
+            );
+          })}
+        </div>
+      </Grid>
+    </div>
+  );
+};
 
 export default Header;

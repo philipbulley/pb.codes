@@ -2,45 +2,11 @@
   margin: 0 0 100px;
   grid-column: span 12;
 
+  /* Hover wipe comes from shared/link-wipe.module.css */
   a {
-    --in: 100ms ease-out;
-    --out: 200ms ease-out;
-
     display: inline-block;
-    position: relative;
     color: var(--color-accent);
     font-weight: var(--font-weight-demibold);
-    text-decoration: none;
-    padding: 3px;
-    transition:
-      background var(--out),
-      color var(--out);
-
-    &:hover {
-      color: var(--color-white);
-      transition:
-        background var(--in),
-        color var(--in);
-    }
-
-    &::before {
-      content: '';
-      position: absolute;
-      top: 0;
-      left: 0;
-      z-index: -1;
-      width: 100%;
-      height: 100%;
-      background: var(--color-accent);
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform var(--out);
-    }
-
-    &:hover::before {
-      transform: scaleX(1);
-      transition: transform var(--in);
-    }
   }
 }
 

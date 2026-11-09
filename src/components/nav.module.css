@@ -28,6 +28,8 @@
   }
 }
 
+/* Hover underline comes from shared/hover-underline.module.css and sits
+   exactly over the active underline (.underline) at the bottom of the link */
 .link {
   display: inline-block;
 }

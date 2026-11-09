@@ -10,16 +10,20 @@
   }
 }
 
+/* Hover wipe comes from shared/link-wipe.module.css */
 .anchor {
+  /* Shrink to the text so the wipe hugs it; auto left margin keeps it right
+     aligned, and -3px right margin offsets the wipe's padding so the text
+     lines up with the copy around it */
   display: block;
+  width: fit-content;
+  margin: 0 -3px 40px auto;
   font-weight: var(--font-weight-demibold);
   color: var(--color-accent);
-  margin: 0 0 40px 0;
-  text-decoration: none;
 }
 
 .big {
   font-size: 24px;
-  margin: 0 0 60px 0;
+  margin-bottom: 60px;
   font-weight: var(--font-weight-bold);
 }

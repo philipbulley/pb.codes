@@ -1,7 +1,22 @@
+/* The only place the header's sizes are set: header.tsx and scroll-room.ts
+   measure them from the page (see shared/header-size.ts) */
 .header {
+  --header-max-height: 140px;
+  --header-min-height: 60px;
+  --header-collapse-distance: calc(
+    var(--header-max-height) - var(--header-min-height)
+  );
+  /* 0 = expanded, 1 = collapsed; set from scroll position in header.tsx */
+  --collapse: 0;
+
+  position: sticky;
+  top: calc(-1 * var(--header-collapse-distance));
+  z-index: 10;
   grid-column: span 12;
   width: 100%;
-  height: 140px;
+  height: var(--header-max-height);
+  /* Clips the header nav while it's still below the header */
+  overflow: hidden;
   color: white;
   background-color: var(--color-accent);
   font-weight: var(--font-weight-bold);
@@ -11,10 +26,87 @@
   height: 100%;
 }
 
-.link {
-  grid-column: span 12;
+.title {
+  grid-row: 1;
+  grid-column: 1 / -1;
   align-self: center;
+  justify-self: start;
   text-decoration: none;
   color: var(--color-white);
   font-size: 24px;
+  transform-origin: left center;
+  /* Stay centred in the visible area, and shrink slightly as it collapses */
+  transform: translateY(
+      calc(var(--collapse) * var(--header-collapse-distance) / 2)
+    )
+    scale(calc(1 - var(--collapse) * 0.2));
+  will-change: transform;
+}
+
+/* Right aligned in the strip that stays visible once collapsed */
+.nav {
+  grid-row: 1;
+  grid-column: 1 / -1;
+  justify-self: end;
+  align-self: end;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  height: var(--header-min-height);
+  /* Balances the links' underline space so the text centres on the title */
+  padding-top: 7px;
+  font-size: 14px;
+  font-weight: var(--font-weight-demibold);
+}
+
+/* Each link sits below the header (clipped) until its page nav link starts
+   going under, then rises into place in step with it; `--link-offset` is set
+   per link in header.tsx (hidden by default until it runs) */
+.navLink {
+  --hover-underline-color: var(--color-white);
+  --link-offset: var(--header-min-height);
+
+  display: inline-block;
+  transform: translateY(var(--link-offset));
+  will-change: transform;
+  /* Leaves room for the underline below the text, matching the page nav:
+     3px gap + 4px underline */
+  padding-bottom: 7px;
+  color: var(--color-white);
+  text-decoration: none;
+}
+
+/* Same thickness, gap and entrance as the page nav's active underline, in
+   white: grows in left to right whenever a link becomes the current section
+   (the page nav's underlineTransition: easeOutExpo over 5s). Meanwhile the
+   clicked link's white hover underline retracts left to right (see
+   shared/hover-underline.module.css), and the previous section's underline
+   goes at once, as in the page nav */
+.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 4px;
+  background: var(--color-white);
+  transform-origin: left;
+  animation: underline-in 5s cubic-bezier(0.19, 1, 0.22, 1) both;
+}
+
+@keyframes underline-in {
+  from {
+    transform: scaleX(0);
+  }
+
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@media (min-width: 768px) {
+  .nav {
+    gap: 28px;
+    font-size: 18px;
+  }
 }

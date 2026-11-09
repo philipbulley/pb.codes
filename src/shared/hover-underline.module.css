@@ -1,0 +1,42 @@
+/*
+ * Hover underline for nav links: a 4px bar along the bottom of the link that
+ * grows left to right on hover and retracts right to left on hover out. Use
+ * `.link` on every nav link and add `.inactive` to those that aren't the
+ * current section; only inactive links react to hover. The link's bottom edge
+ * should sit where the active underline is drawn. Colour comes from
+ * `--hover-underline-color` (black by default).
+ */
+.link {
+  --in: 100ms ease-out;
+  --out: 200ms ease-out;
+
+  position: relative;
+
+  /* Origin stays left, so it grows left to right and retracts right to left */
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--hover-underline-color, var(--color-black));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--out);
+  }
+}
+
+/* Once clicked, the link becomes the current section and the hover underline
+   retracts left to right instead, handing over to the active underline.
+   Origin has no visual effect at full width, so switching it here is seamless */
+.link:not(.inactive)::after {
+  transform-origin: right;
+}
+
+@media (hover: hover) {
+  .inactive:hover::after {
+    transform: scaleX(1);
+    transition: transform var(--in);
+  }
+}
