@@ -2,14 +2,17 @@
  * Hover effect: the accent colour wipes in behind the text from the left and
  * the text turns white. Use `.link` on an anchor, or `.links` on a container
  * to apply it to every anchor inside (e.g. links in project copy).
- * Colour, weight and size are left to the component.
+ * Colour, weight, size and layout (e.g. `display`) are left to the component.
+ *
+ * Don't set anything here that a component also sets: in production this
+ * file can load after the component's own CSS, and with equal specificity
+ * whichever loads last wins (this once made Contact's links inline).
  */
 .link,
 .links a {
   --in: 100ms ease-out;
   --out: 200ms ease-out;
 
-  display: inline-block;
   position: relative;
   /* Keeps the fill behind the text but in front of anything behind the link */
   isolation: isolate;

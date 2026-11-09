@@ -4,6 +4,7 @@
 
   /* Hover wipe comes from shared/link-wipe.module.css */
   a {
+    display: inline-block;
     color: var(--color-accent);
     font-weight: var(--font-weight-demibold);
   }
