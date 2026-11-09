@@ -15,8 +15,8 @@ import { measureStickyHeader } from './header-size';
 
 /**
  * Experimental: after landing on a page that needed room, wait a moment, then
- * glide back up to where the page can scroll by itself (the top, for a page
- * that fits the viewport), revealing the page nav and dropping the room. Any
+ * glide back up to the top, expanding the header, revealing the bio and page
+ * nav, and dropping the room on the way. Any
  * scrolling, key or pointer input from the reader stops it. Skipped entirely
  * when the OS asks for reduced motion: the room stays, and shrinks as usual
  * when the reader scrolls up. `easing` picks a curve from `easings` below.
@@ -92,7 +92,7 @@ const cancelSettle = () => {
 
 /**
  * Glide to `settleTo` after the delay, or by default (and only when room was
- * needed) to wherever the page can scroll by itself. Without the animation
+ * needed) to the top. Without the animation
  * (reduced motion, or settling switched off), an explicit `settleTo` is
  * jumped to straight away, dropping any room; the default case is left as is.
  */
@@ -114,13 +114,9 @@ const scheduleSettle = (settleTo: number | null = null) => {
   settleTimer = window.setTimeout(() => {
     settleTimer = null;
     const from = window.scrollY;
-    // Furthest the page could scroll without any room
-    const to =
-      settleTo ??
-      Math.max(
-        document.documentElement.scrollHeight - room - window.innerHeight,
-        0,
-      );
+    // All the way to the top, so the header expands and the bio and page nav
+    // come into view, even when the page is a little taller than the viewport
+    const to = settleTo ?? 0;
     if (Math.abs(from - to) < 1) {
       return;
     }
