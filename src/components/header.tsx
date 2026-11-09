@@ -1,8 +1,12 @@
-import { useEffect, useRef, type MouseEvent, type RefObject } from 'react';
+import { useEffect, useRef, type RefObject } from 'react';
 import { Link, useLocation } from 'react-router';
 import Grid from '../shared/grid/grid';
 import cx from '../shared/cx';
-import { requestScroll, scrollToWithRoom } from '../shared/scroll-room';
+import {
+  requestScroll,
+  scrollToWithRoom,
+  settleScroll,
+} from '../shared/scroll-room';
 import underline from '../shared/hover-underline.module.css';
 import { getActiveNavOffset, navItems } from './nav';
 import styles from './header.module.css';
@@ -39,37 +43,41 @@ const Header = ({ navRef }: HeaderProps) => {
   const { pathname } = useLocation();
 
   /**
-   * The scroll position where the page nav link at `index`, once it's the
-   * active one, has gone fully under the header and `headerLink` has just
-   * come to rest: the header nav fully in, the page nav just out of sight and
-   * the content starting right below. The page nav sits in the same place on
-   * every page, so this is worked out before navigating.
+   * The scroll position where the page nav link at `index` has gone fully
+   * under the header and its header link has just come to rest: the header
+   * nav fully in, the page nav just out of sight and the content starting
+   * right below. Scrolling down a pixel more would start the header nav
+   * moving. `isActive` says whether that page link will be the active one,
+   * which sits lower. The page nav sits in the same place on every page, so
+   * this is worked out before navigating.
    */
-  const getSnapTarget = (index: number, headerLink: HTMLElement) => {
+  const getSnapTarget = (index: number, isActive: boolean) => {
     const el = ref.current;
     const pageNav = navRef.current;
     const item = pageNav?.children[index];
     const pageLink = item?.querySelector('a');
-    if (!el || !pageNav || !item || !pageLink) {
+    const headerLink = headerNavRef.current?.querySelectorAll('a')[index];
+    if (!el || !pageNav || !item || !pageLink || !headerLink) {
       return null;
     }
 
-    // The page link's top in the document once it settles as the active link,
-    // ignoring its current animation: its item starts at the top of the nav
+    // The page link's top in the document once settled, ignoring its current
+    // animation: its item starts at the top of the nav
     const pageTop =
       pageNav.getBoundingClientRect().top +
       window.scrollY +
       (pageLink.getBoundingClientRect().top -
         item.getBoundingClientRect().top) +
-      getActiveNavOffset();
+      (isActive ? getActiveNavOffset() : 0);
 
     // Inverse of `update` below: how far under the header the page link must
-    // be for the header link to have just reached its rest position
-    const headerRect = el.getBoundingClientRect();
-    const restTop = headerRect.top + headerLink.offsetTop;
-    const hiddenShare = (headerRect.bottom - restTop) / headerLink.offsetHeight;
-    const pageTopInView =
-      headerRect.bottom - hiddenShare * pageLink.offsetHeight;
+    // be for the header link to have just reached its rest position, with the
+    // header collapsed (as it always is by then)
+    const headerTop = -COLLAPSE_DISTANCE;
+    const headerBottom = el.offsetHeight - COLLAPSE_DISTANCE;
+    const restTop = headerTop + headerLink.offsetTop;
+    const hiddenShare = (headerBottom - restTop) / headerLink.offsetHeight;
+    const pageTopInView = headerBottom - hiddenShare * pageLink.offsetHeight;
 
     return Math.ceil(pageTop - pageTopInView);
   };
@@ -77,12 +85,9 @@ const Header = ({ navRef }: HeaderProps) => {
   // Header links are only reachable once scrolled well down the page, so
   // rather than keep that (possibly deep) position, land on the new page just
   // above its content
-  const handleHeaderLinkClick = (
-    index: number,
-    isActive: boolean,
-    event: MouseEvent<HTMLAnchorElement>,
-  ) => {
-    const target = getSnapTarget(index, event.currentTarget);
+  const handleHeaderLinkClick = (index: number, isActive: boolean) => {
+    // The clicked link will be the active one on the page it opens
+    const target = getSnapTarget(index, true);
     if (target === null) {
       return;
     }
@@ -179,7 +184,27 @@ const Header = ({ navRef }: HeaderProps) => {
   return (
     <div className={styles.header} ref={ref}>
       <Grid className={styles.grid}>
-        <Link className={styles.title} to="/">
+        <Link
+          className={styles.title}
+          to="/"
+          // Home opens no further down than where the header nav has just come
+          // to rest (as the header nav lands; home has no active link), with
+          // room if needed, then settles to the top so the bio and nav come
+          // into view: glided like Contact's settle, or straight to the top
+          // with reduced motion. Scrolling is handled in scroll-room.ts
+          // rather than reset by the router
+          preventScrollReset
+          onClick={() => {
+            if (pathname === '/') {
+              settleScroll(0);
+              return;
+            }
+            const restPoint = getSnapTarget(0, false) ?? window.scrollY;
+            requestScroll(Math.min(window.scrollY, restPoint), {
+              settleTo: 0,
+            });
+          }}
+        >
           pb.codes
         </Link>
         <div className={styles.nav} ref={headerNavRef}>
@@ -197,8 +222,8 @@ const Header = ({ navRef }: HeaderProps) => {
                 to={to}
                 // Scrolling is handled here instead (see handleHeaderLinkClick)
                 preventScrollReset
-                onClick={(event) => {
-                  handleHeaderLinkClick(index, isActive, event);
+                onClick={() => {
+                  handleHeaderLinkClick(index, isActive);
                 }}
               >
                 {label}

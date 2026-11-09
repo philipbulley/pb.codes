@@ -35,6 +35,7 @@ let content: HTMLElement | null = null;
 let room = 0;
 let lastScrollY = 0;
 let pendingScroll: number | null = null;
+let pendingSettleTo: number | null = null;
 let settleTimer: number | null = null;
 let settleFrame: number | null = null;
 
@@ -91,13 +92,24 @@ const cancelSettle = () => {
   }
 };
 
-const scheduleSettle = () => {
+/**
+ * Glide to `settleTo` after the delay, or by default (and only when room was
+ * needed) to wherever the page can scroll by itself. Without the animation
+ * (reduced motion, or settling switched off), an explicit `settleTo` is
+ * jumped to straight away, dropping any room; the default case is left as is.
+ */
+const scheduleSettle = (settleTo: number | null = null) => {
   cancelSettle();
-  if (
-    !SETTLE.enabled ||
-    room === 0 ||
-    window.matchMedia('(prefers-reduced-motion: reduce)').matches
-  ) {
+  const animate =
+    SETTLE.enabled &&
+    !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!animate) {
+    if (settleTo !== null) {
+      scrollToWithRoom(settleTo);
+    }
+    return;
+  }
+  if (settleTo === null && room === 0) {
     return;
   }
 
@@ -105,11 +117,13 @@ const scheduleSettle = () => {
     settleTimer = null;
     const from = window.scrollY;
     // Furthest the page could scroll without any room
-    const to = Math.max(
-      document.documentElement.scrollHeight - room - window.innerHeight,
-      0,
-    );
-    if (from - to < 1) {
+    const to =
+      settleTo ??
+      Math.max(
+        document.documentElement.scrollHeight - room - window.innerHeight,
+        0,
+      );
+    if (Math.abs(from - to) < 1) {
       return;
     }
 
@@ -174,10 +188,20 @@ export const scrollToWithRoom = (target: number) => {
 
 /**
  * Where the next page should land, if not where we are now (the header nav
- * uses this to land just above the content)
+ * uses this to land just above the content), and optionally where it should
+ * then settle (the logo settles to the top; see `scheduleSettle`)
  */
-export const requestScroll = (target: number) => {
+export const requestScroll = (
+  target: number,
+  { settleTo = null }: { settleTo?: number | null } = {},
+) => {
   pendingScroll = target;
+  pendingSettleTo = settleTo;
+};
+
+/** Settle the current page to `to`, as a navigation would (see `scheduleSettle`) */
+export const settleScroll = (to: number) => {
+  scheduleSettle(to);
 };
 
 /** Drop any room that's now below the viewport, so it can't be scrolled into */
@@ -245,8 +269,10 @@ export const useScrollRoom = (
       return;
     }
     const target = pendingScroll ?? lastScrollY;
+    const settleTo = pendingSettleTo;
     pendingScroll = null;
+    pendingSettleTo = null;
     scrollToWithRoom(target);
-    scheduleSettle();
+    scheduleSettle(settleTo);
   }, [pathname]);
 };
