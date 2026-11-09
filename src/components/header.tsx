@@ -14,8 +14,32 @@ import styles from './header.module.css';
 /** Must match `--header-collapse-distance` in header.module.css */
 const COLLAPSE_DISTANCE = 80;
 
-/** How long the page nav's own animations run after navigating (see nav.tsx) */
-const NAV_SETTLE_MS = 600;
+/**
+ * Where the page nav link at `index` sits in the viewport once its own
+ * animation has settled, ignoring any that's under way: after navigating, the
+ * previously active link takes a moment to rise back into line, and the header
+ * shouldn't follow that. `isActive` says whether it's (or will be) the active
+ * one, which settles lower. Its item starts at the top of the nav.
+ */
+const getSettledPageLink = (
+  pageNav: HTMLElement | null,
+  index: number,
+  isActive: boolean,
+) => {
+  const item = pageNav?.children[index];
+  const pageLink = item?.querySelector('a');
+  if (!pageNav || !item || !pageLink) {
+    return null;
+  }
+  return {
+    top:
+      pageNav.getBoundingClientRect().top +
+      (pageLink.getBoundingClientRect().top -
+        item.getBoundingClientRect().top) +
+      (isActive ? getActiveNavOffset() : 0),
+    height: pageLink.offsetHeight,
+  };
+};
 
 interface HeaderProps {
   /** The page nav, whose position drives when the header's nav appears */
@@ -53,22 +77,12 @@ const Header = ({ navRef }: HeaderProps) => {
    */
   const getSnapTarget = (index: number, isActive: boolean) => {
     const el = ref.current;
-    const pageNav = navRef.current;
-    const item = pageNav?.children[index];
-    const pageLink = item?.querySelector('a');
+    const page = getSettledPageLink(navRef.current, index, isActive);
     const headerLink = headerNavRef.current?.querySelectorAll('a')[index];
-    if (!el || !pageNav || !item || !pageLink || !headerLink) {
+    if (!el || !page || !headerLink) {
       return null;
     }
-
-    // The page link's top in the document once settled, ignoring its current
-    // animation: its item starts at the top of the nav
-    const pageTop =
-      pageNav.getBoundingClientRect().top +
-      window.scrollY +
-      (pageLink.getBoundingClientRect().top -
-        item.getBoundingClientRect().top) +
-      (isActive ? getActiveNavOffset() : 0);
+    const pageTop = page.top + window.scrollY;
 
     // Inverse of `update` below: how far under the header the page link must
     // be for the header link to have just reached its rest position, with the
@@ -77,7 +91,7 @@ const Header = ({ navRef }: HeaderProps) => {
     const headerBottom = el.offsetHeight - COLLAPSE_DISTANCE;
     const restTop = headerTop + headerLink.offsetTop;
     const hiddenShare = (headerBottom - restTop) / headerLink.offsetHeight;
-    const pageTopInView = headerBottom - hiddenShare * pageLink.offsetHeight;
+    const pageTopInView = headerBottom - hiddenShare * page.height;
 
     return Math.ceil(pageTop - pageTopInView);
   };
@@ -112,14 +126,18 @@ const Header = ({ navRef }: HeaderProps) => {
       const scrolled = Math.min(Math.max(window.scrollY, 0), COLLAPSE_DISTANCE);
       el.style.setProperty('--collapse', String(scrolled / COLLAPSE_DISTANCE));
 
-      // Each header link pairs with the page nav link in the same position
-      const pageLinks = navRef.current?.querySelectorAll('a') ?? [];
+      // Each header link pairs with the page nav link in the same position,
+      // where it settles rather than wherever its own animation has got to
       const headerLinks = headerNav.querySelectorAll<HTMLElement>('a');
       const headerRect = el.getBoundingClientRect();
 
       let anyVisible = false;
       headerLinks.forEach((link, i) => {
-        const page = pageLinks[i]?.getBoundingClientRect();
+        const page = getSettledPageLink(
+          navRef.current,
+          i,
+          pathname.startsWith(navItems[i]?.to ?? ''),
+        );
         // Where the link sits at rest, ignoring its transform (its offset
         // parent is the header)
         const restTop = headerRect.top + link.offsetTop;
@@ -154,19 +172,7 @@ const Header = ({ navRef }: HeaderProps) => {
       });
     };
 
-    // After navigating, the page nav's links animate into new positions
-    // without the page scrolling, so keep following them until they settle
-    let settleFrame: number | null = null;
-    const settleUntil = performance.now() + NAV_SETTLE_MS;
-    const followSettle = () => {
-      update();
-      settleFrame =
-        performance.now() < settleUntil
-          ? window.requestAnimationFrame(followSettle)
-          : null;
-    };
-    followSettle();
-
+    update();
     window.addEventListener('scroll', scheduleUpdate, { passive: true });
     window.addEventListener('resize', scheduleUpdate);
     return () => {
@@ -174,9 +180,6 @@ const Header = ({ navRef }: HeaderProps) => {
       window.removeEventListener('resize', scheduleUpdate);
       if (frame !== null) {
         window.cancelAnimationFrame(frame);
-      }
-      if (settleFrame !== null) {
-        window.cancelAnimationFrame(settleFrame);
       }
     };
   }, [navRef, pathname]);
