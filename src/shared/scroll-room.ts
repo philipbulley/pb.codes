@@ -157,15 +157,17 @@ export const scrollToWithRoom = (target: number) => {
   );
   const top = Math.min(Math.max(target, 0), limit);
 
-  // The content area stretches to fill the viewport on short pages, which
-  // absorbs some of the room at first, so top up until the page is tall enough
-  for (let i = 0; i < 3; i++) {
-    const shortfall = top + viewport - pageHeight();
-    if (shortfall <= 0) {
-      break;
-    }
-    setRoom(room + shortfall);
+  // The content area stretches to fill the viewport on short pages, and that
+  // stretch would swallow the room, so size the room from the page's height
+  // without it
+  let stretch = 0;
+  if (content) {
+    const stretched = content.offsetHeight;
+    content.style.flexGrow = '0';
+    stretch = stretched - content.offsetHeight;
+    content.style.flexGrow = '';
   }
+  setRoom(top + viewport - (pageHeight() - stretch));
   window.scrollTo({ top, behavior: 'instant' });
   lastScrollY = top;
 };
