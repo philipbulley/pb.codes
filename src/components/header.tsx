@@ -8,23 +8,21 @@ import {
   settleScroll,
 } from '../shared/scroll-room';
 import underline from '../shared/hover-underline.module.css';
-import { getActiveNavOffset, navItems } from './nav';
+import { measureHeader, STICKY_HEADER_ATTRIBUTE } from '../shared/header-size';
+import { getActiveNavOffset, getCurrentActiveNavOffset, navItems } from './nav';
 import styles from './header.module.css';
-
-/** Must match `--header-collapse-distance` in header.module.css */
-const COLLAPSE_DISTANCE = 80;
 
 /**
  * Where the page nav link at `index` sits in the viewport once its own
  * animation has settled, ignoring any that's under way: after navigating, the
  * previously active link takes a moment to rise back into line, and the header
- * shouldn't follow that. `isActive` says whether it's (or will be) the active
- * one, which settles lower. Its item starts at the top of the nav.
+ * shouldn't follow that. `drop` is how far it settles below the others (the
+ * active link's offset, or 0). Its item starts at the top of the nav.
  */
 const getSettledPageLink = (
   pageNav: HTMLElement | null,
   index: number,
-  isActive: boolean,
+  drop: number,
 ) => {
   const item = pageNav?.children[index];
   const pageLink = item?.querySelector('a');
@@ -36,9 +34,23 @@ const getSettledPageLink = (
       pageNav.getBoundingClientRect().top +
       (pageLink.getBoundingClientRect().top -
         item.getBoundingClientRect().top) +
-      (isActive ? getActiveNavOffset() : 0),
+      drop,
     height: pageLink.offsetHeight,
   };
+};
+
+/**
+ * How far a header nav link's top sits below the header's top at rest,
+ * measured directly (minus the link's own reveal transform), so it doesn't
+ * depend on which element the link's offsets are measured from
+ */
+const getRestOffsetInHeader = (link: HTMLElement, headerTop: number) => {
+  const { transform } = getComputedStyle(link);
+  const shift =
+    transform && transform !== 'none'
+      ? new DOMMatrixReadOnly(transform).m42
+      : 0;
+  return link.getBoundingClientRect().top - shift - headerTop;
 };
 
 interface HeaderProps {
@@ -71,13 +83,13 @@ const Header = ({ navRef }: HeaderProps) => {
    * under the header and its header link has just come to rest: the header
    * nav fully in, the page nav just out of sight and the content starting
    * right below. Scrolling down a pixel more would start the header nav
-   * moving. `isActive` says whether that page link will be the active one,
-   * which sits lower. The page nav sits in the same place on every page, so
-   * this is worked out before navigating.
+   * moving. `drop` is how far that page link will settle below the others.
+   * The page nav sits in the same place on every page, so this is worked out
+   * before navigating.
    */
-  const getSnapTarget = (index: number, isActive: boolean) => {
+  const getSnapTarget = (index: number, drop: number) => {
     const el = ref.current;
-    const page = getSettledPageLink(navRef.current, index, isActive);
+    const page = getSettledPageLink(navRef.current, index, drop);
     const headerLink = headerNavRef.current?.querySelectorAll('a')[index];
     if (!el || !page || !headerLink) {
       return null;
@@ -87,9 +99,12 @@ const Header = ({ navRef }: HeaderProps) => {
     // Inverse of `update` below: how far under the header the page link must
     // be for the header link to have just reached its rest position, with the
     // header collapsed (as it always is by then)
-    const headerTop = -COLLAPSE_DISTANCE;
-    const headerBottom = el.offsetHeight - COLLAPSE_DISTANCE;
-    const restTop = headerTop + headerLink.offsetTop;
+    const { collapseDistance, minHeight } = measureHeader(el);
+    const headerTop = -collapseDistance;
+    const headerBottom = minHeight;
+    const restTop =
+      headerTop +
+      getRestOffsetInHeader(headerLink, el.getBoundingClientRect().top);
     const hiddenShare = (headerBottom - restTop) / headerLink.offsetHeight;
     const pageTopInView = headerBottom - hiddenShare * page.height;
 
@@ -100,8 +115,12 @@ const Header = ({ navRef }: HeaderProps) => {
   // rather than keep that (possibly deep) position, land on the new page just
   // above its content
   const handleHeaderLinkClick = (index: number, isActive: boolean) => {
-    // The clicked link will be the active one on the page it opens
-    const target = getSnapTarget(index, true);
+    // The clicked link will be the active one on the page it opens: it keeps
+    // its current drop if it already is, else takes one for this width
+    const target = getSnapTarget(
+      index,
+      isActive ? getCurrentActiveNavOffset() : getActiveNavOffset(),
+    );
     if (target === null) {
       return;
     }
@@ -123,8 +142,12 @@ const Header = ({ navRef }: HeaderProps) => {
     }
 
     const update = () => {
-      const scrolled = Math.min(Math.max(window.scrollY, 0), COLLAPSE_DISTANCE);
-      el.style.setProperty('--collapse', String(scrolled / COLLAPSE_DISTANCE));
+      const { collapseDistance } = measureHeader(el);
+      const scrolled = Math.min(Math.max(window.scrollY, 0), collapseDistance);
+      el.style.setProperty(
+        '--collapse',
+        String(collapseDistance > 0 ? scrolled / collapseDistance : 1),
+      );
 
       // Each header link pairs with the page nav link in the same position,
       // where it settles rather than wherever its own animation has got to
@@ -133,14 +156,14 @@ const Header = ({ navRef }: HeaderProps) => {
 
       let anyVisible = false;
       headerLinks.forEach((link, i) => {
+        const isActive = pathname.startsWith(navItems[i]?.to ?? '');
         const page = getSettledPageLink(
           navRef.current,
           i,
-          pathname.startsWith(navItems[i]?.to ?? ''),
+          isActive ? getCurrentActiveNavOffset() : 0,
         );
-        // Where the link sits at rest, ignoring its transform (its offset
-        // parent is the header)
-        const restTop = headerRect.top + link.offsetTop;
+        const restTop =
+          headerRect.top + getRestOffsetInHeader(link, headerRect.top);
         const hiddenOffset = headerRect.bottom - restTop;
         if (!page || page.height === 0) {
           link.style.setProperty('--link-offset', `${hiddenOffset}px`);
@@ -185,7 +208,11 @@ const Header = ({ navRef }: HeaderProps) => {
   }, [navRef, pathname]);
 
   return (
-    <div className={styles.header} ref={ref}>
+    <div
+      className={styles.header}
+      ref={ref}
+      {...{ [STICKY_HEADER_ATTRIBUTE]: '' }}
+    >
       <Grid className={styles.grid}>
         <Link
           className={styles.title}
@@ -202,7 +229,8 @@ const Header = ({ navRef }: HeaderProps) => {
               settleScroll(0);
               return;
             }
-            const restPoint = getSnapTarget(0, false) ?? window.scrollY;
+            // Home has no active link, so no drop
+            const restPoint = getSnapTarget(0, 0) ?? window.scrollY;
             requestScroll(Math.min(window.scrollY, restPoint), {
               settleTo: 0,
             });

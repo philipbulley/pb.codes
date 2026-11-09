@@ -1,4 +1,5 @@
 import { useLayoutEffect, useRef, type RefObject } from 'react';
+import { measureStickyHeader } from './header-size';
 
 /**
  * Keeps the scroll position when moving to a page too short to scroll that
@@ -11,9 +12,6 @@ import { useLayoutEffect, useRef, type RefObject } from 'react';
  * footer stays in the flow (it never sits over content). Once the page could
  * have scrolled there by itself, the spacer is gone.
  */
-
-/** The collapsed header's height: content is never scrolled above this */
-const HEADER_MIN_HEIGHT = 60;
 
 /**
  * Experimental: after landing on a page that needed room, wait a moment, then
@@ -166,7 +164,8 @@ export const scrollToWithRoom = (target: number) => {
     : 0;
   const limit = Math.max(
     pageHeight() - viewport,
-    contentTop - HEADER_MIN_HEIGHT,
+    // The collapsed header's height
+    contentTop - (measureStickyHeader()?.minHeight ?? 0),
     0,
   );
   const top = Math.min(Math.max(target, 0), limit);

@@ -60,10 +60,19 @@ const Nav = ({ currentPath, ref }: NavProps) => (
 export default Nav;
 
 /**
- * How far the active link drops below the others once its animation settles.
- * Browser only (reads the viewport width)
+ * How far a link that becomes active from now will drop below the others,
+ * for the current viewport width. Browser only (reads the viewport width)
  */
 export const getActiveNavOffset = () => (matches(minWidth.sm) ? 50 : 0);
+
+/**
+ * The drop the current active link actually has (or is animating to). It's
+ * chosen once when its animation starts and kept if the viewport is later
+ * resized across the breakpoint, so this can differ from getActiveNavOffset
+ */
+let activeOffset: number | null = null;
+export const getCurrentActiveNavOffset = () =>
+  activeOffset ?? getActiveNavOffset();
 
 const navItemTransition = { ease: easeOutExpo, duration: 0.5 };
 const navItemVariants: Variants = {
@@ -72,11 +81,14 @@ const navItemVariants: Variants = {
     opacity: 0,
   },
   // Resolved when the animation starts, so `matches` only runs in the browser
-  active: () => ({
-    y: getActiveNavOffset(),
-    opacity: 1,
-    transition: navItemTransition,
-  }),
+  active: () => {
+    activeOffset = getActiveNavOffset();
+    return {
+      y: activeOffset,
+      opacity: 1,
+      transition: navItemTransition,
+    };
+  },
   inactive: {
     y: 0,
     opacity: 1,
