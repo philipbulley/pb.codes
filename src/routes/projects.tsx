@@ -13,7 +13,7 @@ const Projects = () => (
   <Grid>
     <Project>
       <Reveal>
-        <Date>March 2020 - present</Date>
+        <Date>March 2020 – present</Date>
         <Heading>NatWest — Mettle</Heading>
         <Paragraph>
           Mettle is the free business account by NatWest that helps small
@@ -48,7 +48,7 @@ const Projects = () => (
 
     <Project>
       <Reveal>
-        <Date>January 2019 - 1 year 1 month</Date>
+        <Date>January 2019 – 1 year 1 month</Date>
         <Heading>HSBC — Financial Management Web App</Heading>
         <Paragraph>
           Lead developer at HSBC (based on-site, Blue Fin) building a greenfield
@@ -93,7 +93,7 @@ const Projects = () => (
 
     <Project>
       <Reveal>
-        <Date>June 2017 - 1 year 7 months</Date>
+        <Date>June 2017 – 1 year 7 months</Date>
         <Heading>Tier 1 Investment Bank — Research Web Apps</Heading>
         <Paragraph>
           A lead role at a Tier 1 investment bank (based on-site, Fleet Street),
@@ -121,7 +121,7 @@ const Projects = () => (
 
     <Project>
       <Reveal>
-        <Date>August 2016 - 10 months</Date>
+        <Date>August 2016 – 10 months</Date>
         <Heading>Commerzbank — FX Trading Mobile App</Heading>
         <Paragraph>
           Lead developer on a mobile FX trading app for Commerzbank using
@@ -144,7 +144,7 @@ const Projects = () => (
 
     <Project>
       <Reveal>
-        <Date>April 2016 - 5 months</Date>
+        <Date>April 2016 – 5 months</Date>
         <Heading>Standard Chartered — Regtech CRM Tool</Heading>
         <Paragraph>
           Senior developer on a custom CRM tool for Standard Chartered.
@@ -162,7 +162,7 @@ const Projects = () => (
 
     <Project>
       <Reveal>
-        <Date>March 2014 - 1 year 9 months</Date>
+        <Date>March 2014 – 1 year 9 months</Date>
         <Heading>Responsive.TV — Video platform SaaS</Heading>
         <Paragraph>
           Technical Lead and creative technologist on ResponsiveTV. An
@@ -191,7 +191,7 @@ const Projects = () => (
 
     <Project>
       <Reveal>
-        <Date>September 1999 - 14 years</Date>
+        <Date>September 1999 – 14 years</Date>
         <Heading>Once upon a time...</Heading>
 
         <Paragraph>
