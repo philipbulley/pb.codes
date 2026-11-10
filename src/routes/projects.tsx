@@ -16,10 +16,10 @@ const Projects = () => (
         <Date>March 2020 – present</Date>
         <Heading>NatWest — Mettle</Heading>
         <Paragraph>
-          Mettle is the free business account by NatWest that helps small
-          businesses start, run and grow. I'm working as a senior developer
-          within the mobile team using React Native, TypeScript and GraphQL to
-          develop the core mobile banking app.
+          Mettle by NatWest is the free business account that helps small
+          businesses start, run and grow. I’m a senior frontend developer and
+          tech lead, specialising in mobile. Day to day, I work on the core
+          React Native mobile banking app.
         </Paragraph>
         <List>
           <ListItem>React Native</ListItem>
