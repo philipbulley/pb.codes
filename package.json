@@ -64,6 +64,6 @@
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{css,json,md,toml,webmanifest}": "prettier --write"
+    "*.{css,json,md,toml,webmanifest}": "prettier --write --ignore-unknown"
   }
 }

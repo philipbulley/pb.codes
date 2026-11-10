@@ -7,6 +7,14 @@
 
 # Pre-rendered pages are served as files. Anything else gets the SPA shell,
 # which renders the not-found route on the client.
+# Vite content-hashes everything in /assets, so it never changes at a given
+# URL. Netlify's default (max-age=0, must-revalidate) costs a round trip per
+# file on every navigation.
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
 [[redirects]]
   from = "/*"
   to = "/__spa-fallback.html"
