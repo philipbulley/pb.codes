@@ -2,15 +2,12 @@ import type { ComponentProps } from 'react';
 import { motion, type Variants } from 'motion/react';
 import Grid from '../shared/grid/grid';
 import useToday from '../shared/use-today';
+import yearsOfExperience from '../shared/years-of-experience';
 import commodore64Src from '../images/commodore-64-c.jpg';
 import styles from './about.module.css';
 
-// Industry experience since 1999, ticking over each August
-const yearsSince1999 = (date: Date) =>
-  date.getFullYear() - 1999 - (date.getMonth() < 7 ? 1 : 0);
-
 const About = () => {
-  const years = yearsSince1999(useToday());
+  const years = yearsOfExperience(useToday());
 
   return (
     <motion.div variants={containerVariants} initial="init" animate="show">
